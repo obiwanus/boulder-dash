@@ -1,0 +1,8 @@
+[package]
+name = "boulder-dash"
+version = "0.1.0"
+authors = ["Ivan Ivanov <ivan@ivanovs.info>"]
+edition = "2018"
+
+[dependencies]
+piston_window = "0.105.0"
