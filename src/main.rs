@@ -1,23 +1,42 @@
-extern crate piston_window;
+use amethyst::{
+    core::transform::TransformBundle,
+    ecs::prelude::{ReadExpect, Resource, SystemData},
+    prelude::*,
+    renderer::{
+        plugins::{RenderFlat2D, RenderToWindow},
+        types::DefaultBackend,
+        RenderingBundle,
+    },
+    utils::application_root_dir,
+};
 
-use piston_window::{self as pw, PistonWindow, WindowSettings};
+struct MyState;
 
-fn main() {
-    let mut window: PistonWindow =
-        WindowSettings::new("Boulder Dash", [640, 480])
-            .exit_on_esc(true)
-            .build()
-            .unwrap();
+impl SimpleState for MyState {
+    fn on_start(&mut self, _data: StateData<'_, GameData<'_, '_>>) {}
+}
 
-    while let Some(event) = window.next() {
-        window.draw_2d(&event, |context, graphics, _device| {
-            pw::clear([1.0; 4], graphics);
-            pw::rectangle(
-                [1.0, 0.0, 0.0, 1.0],
-                [0.0, 0.0, 100.0, 100.0],
-                context.transform,
-                graphics,
-            );
-        });
-    }
+fn main() -> amethyst::Result<()> {
+    amethyst::start_logger(Default::default());
+
+    let app_root = application_root_dir()?;
+
+    let config_dir = app_root.join("config");
+    let display_config_path = config_dir.join("display.ron");
+
+    let game_data = GameDataBuilder::default()
+        .with_bundle(
+            RenderingBundle::<DefaultBackend>::new()
+                .with_plugin(
+                    RenderToWindow::from_config_path(display_config_path)
+                        .with_clear([0.34, 0.36, 0.52, 1.0]),
+                )
+                .with_plugin(RenderFlat2D::default()),
+        )?
+        .with_bundle(TransformBundle::new())?;
+
+    let mut game = Application::new("/", MyState, game_data)?;
+    game.run();
+
+    Ok(())
 }

@@ -5,4 +5,10 @@ authors = ["Ivan Ivanov <ivan@ivanovs.info>"]
 edition = "2018"
 
 [dependencies]
-piston_window = "0.105.0"
+amethyst = "0.13.2"
+
+[features]
+default = ["amethyst/vulkan"]
+empty = ["amethyst/empty"]
+metal = ["amethyst/metal"]
+vulkan = ["amethyst/vulkan"]
