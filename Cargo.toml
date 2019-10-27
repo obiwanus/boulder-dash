@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies.amethyst]
 version = "0.13.2"
-features = ["metal"]
+features = ["vulkan"]
 
 [features]
 empty = ["amethyst/empty"]
