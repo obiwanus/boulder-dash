@@ -3,6 +3,7 @@ extern crate sdl2;
 
 pub mod render_gl;
 
+use gl::types::{GLint, GLsizeiptr, GLuint, GLvoid};
 use std::ffi::CString;
 
 use render_gl::{Program, Shader};
@@ -30,13 +31,43 @@ fn main() {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
+    let vertices: Vec<f32> = vec![-0.5, -0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.5, 0.0];
+    let mut vbo: GLuint = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut vbo);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,                                            // target
+            (vertices.len() * std::mem::size_of::<f32>()) as GLsizeiptr, // size of data in bytes
+            vertices.as_ptr() as *const GLvoid,                          // pointer to data
+            gl::STATIC_DRAW,                                             // usage
+        );
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
+    }
+    let mut vao: GLuint = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao);
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+        gl::EnableVertexAttribArray(0); // layout (location = 0) in vertex shader
+        gl::VertexAttribPointer(
+            0,                                         // index of the generic vertex attribute
+            3,         // number of components per generic vertex attribute
+            gl::FLOAT, // data type
+            gl::FALSE, // normalised (int-to-float conversion)
+            (3 * std::mem::size_of::<f32>()) as GLint, // stride
+            std::ptr::null(), // offset of the first component
+        );
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        gl::BindVertexArray(0);
+    }
+
     let vert_shader =
         Shader::vertex_from_source(&CString::new(include_str!("triangle.vert")).unwrap()).unwrap();
     let frag_shader =
         Shader::fragment_from_source(&CString::new(include_str!("triangle.frag")).unwrap())
             .unwrap();
     let shader_program = Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
-    shader_program.set_used();
 
     let mut event_pump = sdl.event_pump().unwrap();
     'main: loop {
@@ -50,6 +81,18 @@ fn main() {
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
+
+        shader_program.set_used();
+
+        unsafe {
+            gl::BindVertexArray(vao);
+            gl::DrawArrays(
+                gl::TRIANGLES,
+                0, // starting index in the enabled arrays
+                3, // number of indices to be rendered
+            );
+        }
+
         window.gl_swap_window();
     }
 }
