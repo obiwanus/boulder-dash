@@ -31,7 +31,13 @@ fn main() {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
-    let vertices: Vec<f32> = vec![-0.5, -0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.5, 0.0];
+    #[rustfmt::skip]
+    let vertices: Vec<f32> = vec![
+        // positions        // colors
+        -0.5, -0.5, 0.0,    1.0, 0.0, 0.0,
+        0.5, -0.5, 0.0,     0.0, 1.0, 0.0,
+        0.0, 0.5, 0.0,      0.0, 0.0, 1.0,
+    ];
     let mut vbo: GLuint = 0;
     unsafe {
         gl::GenBuffers(1, &mut vbo);
@@ -49,15 +55,27 @@ fn main() {
         gl::GenVertexArrays(1, &mut vao);
         gl::BindVertexArray(vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+
         gl::EnableVertexAttribArray(0); // layout (location = 0) in vertex shader
         gl::VertexAttribPointer(
             0,                                         // index of the generic vertex attribute
             3,         // number of components per generic vertex attribute
             gl::FLOAT, // data type
             gl::FALSE, // normalised (int-to-float conversion)
-            (3 * std::mem::size_of::<f32>()) as GLint, // stride
+            (6 * std::mem::size_of::<f32>()) as GLint, // stride
             std::ptr::null(), // offset of the first component
         );
+
+        gl::EnableVertexAttribArray(1); // layout (location = 1) in vertex shader
+        gl::VertexAttribPointer(
+            1,                                                 // index of the generic vertex attribute
+            3,         // number of components per generic vertex attribute
+            gl::FLOAT, // data type
+            gl::FALSE, // normalised (int-to-float conversion)
+            (6 * std::mem::size_of::<f32>()) as GLint, // stride
+            (3 * std::mem::size_of::<f32>()) as *const GLvoid, // offset of the first component
+        );
+
         gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         gl::BindVertexArray(0);
     }
