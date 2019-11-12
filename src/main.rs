@@ -2,13 +2,17 @@ extern crate gl;
 extern crate sdl2;
 
 pub mod render_gl;
+pub mod resources;
 
 use gl::types::{GLint, GLsizeiptr, GLuint, GLvoid};
-use std::ffi::CString;
+use resources::Resources;
+use std::path::Path;
 
-use render_gl::{Program, Shader};
+use render_gl::Program;
 
 fn main() {
+    let res = Resources::from_relative_exe_path(Path::new("assets")).unwrap();
+
     let sdl = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
     let gl_attr = video_subsystem.gl_attr();
@@ -80,12 +84,7 @@ fn main() {
         gl::BindVertexArray(0);
     }
 
-    let vert_shader =
-        Shader::vertex_from_source(&CString::new(include_str!("triangle.vert")).unwrap()).unwrap();
-    let frag_shader =
-        Shader::fragment_from_source(&CString::new(include_str!("triangle.frag")).unwrap())
-            .unwrap();
-    let shader_program = Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
+    let shader_program = Program::from_res(&res, "shaders/triangle").unwrap();
 
     let mut event_pump = sdl.event_pump().unwrap();
     'main: loop {

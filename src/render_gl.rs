@@ -1,3 +1,4 @@
+use crate::resources::Resources;
 use gl;
 use gl::types::{GLchar, GLenum, GLint, GLuint};
 use std::ffi::{CStr, CString};
@@ -7,6 +8,17 @@ pub struct Program {
 }
 
 impl Program {
+    pub fn from_res(res: &Resources, name: &str) -> Result<Program, String> {
+        const POSSIBLE_EXT: [&str; 2] = [".vert", ".frag"];
+
+        let shaders = POSSIBLE_EXT
+            .iter()
+            .map(|file_extension| Shader::from_res(res, &format!("{}{}", name, file_extension)))
+            .collect::<Result<Vec<Shader>, String>>()?;
+
+        Program::from_shaders(&shaders[..])
+    }
+
     pub fn from_shaders(shaders: &[Shader]) -> Result<Program, String> {
         let program_id = unsafe { gl::CreateProgram() };
         for shader in shaders {
@@ -76,6 +88,23 @@ pub struct Shader {
 impl Shader {
     pub fn id(&self) -> GLuint {
         self.id
+    }
+
+    pub fn from_res(res: &Resources, name: &str) -> Result<Shader, String> {
+        const POSSIBLE_EXT: [(&str, GLenum); 2] =
+            [(".vert", gl::VERTEX_SHADER), (".frag", gl::FRAGMENT_SHADER)];
+
+        let shader_kind = POSSIBLE_EXT
+            .iter()
+            .find(|&&(file_extension, _)| name.ends_with(file_extension))
+            .map(|&(_, kind)| kind)
+            .ok_or_else(|| format!("Can't determine shader type for resource {}", name))?;
+
+        let source = res
+            .load_cstring(name)
+            .map_err(|e| format!("Error loading resource {}: {:?}", name, e))?;
+
+        Shader::from_source(&source, shader_kind)
     }
 
     fn from_source(source: &CStr, kind: GLenum) -> Result<Shader, String> {
