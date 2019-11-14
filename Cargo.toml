@@ -7,3 +7,6 @@ edition = "2018"
 [dependencies]
 sdl2 = "0.32.2"
 gl = { path = "lib/gl" }
+
+[build-dependencies]
+walkdir = "2.2.9"
