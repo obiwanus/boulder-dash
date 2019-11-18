@@ -1,22 +1,44 @@
-use crate::resources::Resources;
+use crate::resources::{self, Resources};
 use gl;
 use gl::types::{GLchar, GLenum, GLint, GLuint};
 use std::ffi::{CStr, CString};
+
+#[derive(Debug)]
+pub enum Error {
+    ResourceLoad {
+        name: String,
+        inner: resources::Error,
+    },
+    CannotDetermineShaderTypeForResource {
+        name: String,
+    },
+    CompileError {
+        name: String,
+        message: String,
+    },
+    LinkError {
+        name: String,
+        message: String,
+    },
+}
 
 pub struct Program {
     id: GLuint,
 }
 
 impl Program {
-    pub fn from_res(res: &Resources, name: &str) -> Result<Program, String> {
+    pub fn from_res(res: &Resources, name: &str) -> Result<Program, Error> {
         const POSSIBLE_EXT: [&str; 2] = [".vert", ".frag"];
 
         let shaders = POSSIBLE_EXT
             .iter()
             .map(|file_extension| Shader::from_res(res, &format!("{}{}", name, file_extension)))
-            .collect::<Result<Vec<Shader>, String>>()?;
+            .collect::<Result<Vec<Shader>, Error>>()?;
 
-        Program::from_shaders(&shaders[..])
+        Program::from_shaders(&shaders[..]).map_err(|message| Error::LinkError {
+            name: name.into(),
+            message,
+        })
     }
 
     pub fn from_shaders(shaders: &[Shader]) -> Result<Program, String> {
@@ -90,7 +112,7 @@ impl Shader {
         self.id
     }
 
-    pub fn from_res(res: &Resources, name: &str) -> Result<Shader, String> {
+    pub fn from_res(res: &Resources, name: &str) -> Result<Shader, Error> {
         const POSSIBLE_EXT: [(&str, GLenum); 2] =
             [(".vert", gl::VERTEX_SHADER), (".frag", gl::FRAGMENT_SHADER)];
 
@@ -98,13 +120,17 @@ impl Shader {
             .iter()
             .find(|&&(file_extension, _)| name.ends_with(file_extension))
             .map(|&(_, kind)| kind)
-            .ok_or_else(|| format!("Can't determine shader type for resource {}", name))?;
+            .ok_or_else(|| Error::CannotDetermineShaderTypeForResource { name: name.into() })?;
 
-        let source = res
-            .load_cstring(name)
-            .map_err(|e| format!("Error loading resource {}: {:?}", name, e))?;
+        let source = res.load_cstring(name).map_err(|e| Error::ResourceLoad {
+            name: name.into(),
+            inner: e,
+        })?;
 
-        Shader::from_source(&source, shader_kind)
+        Shader::from_source(&source, shader_kind).map_err(|message| Error::CompileError {
+            name: name.into(),
+            message,
+        })
     }
 
     fn from_source(source: &CStr, kind: GLenum) -> Result<Shader, String> {
