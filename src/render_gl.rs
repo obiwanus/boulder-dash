@@ -1,25 +1,23 @@
 use crate::resources::{self, Resources};
+use failure::Fail;
 use gl;
 use gl::types::{GLchar, GLenum, GLint, GLuint};
 use std::ffi::{CStr, CString};
 
-#[derive(Debug)]
+#[derive(Debug, Fail)]
 pub enum Error {
+    #[fail(display = "Failed to load resource {}", name)]
     ResourceLoad {
         name: String,
+        #[cause]
         inner: resources::Error,
     },
-    CannotDetermineShaderTypeForResource {
-        name: String,
-    },
-    CompileError {
-        name: String,
-        message: String,
-    },
-    LinkError {
-        name: String,
-        message: String,
-    },
+    #[fail(display = "Can't determine shader type for resource {}", name)]
+    CannotDetermineShaderTypeForResource { name: String },
+    #[fail(display = "Failed to compile shader {}: {}", name, message)]
+    CompileError { name: String, message: String },
+    #[fail(display = "Failed to link program {}: {}", name, message)]
+    LinkError { name: String, message: String },
 }
 
 pub struct Program {
