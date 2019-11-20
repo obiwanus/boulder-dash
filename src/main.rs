@@ -7,7 +7,7 @@ extern crate failure;
 pub mod render_gl;
 pub mod resources;
 
-use failure::{Error, Fail};
+use failure::Error;
 use gl::types::{GLint, GLsizeiptr, GLuint, GLvoid};
 use resources::Resources;
 use std::path::Path;
@@ -23,8 +23,8 @@ fn main() {
 fn run() -> Result<(), Error> {
     let res = Resources::from_relative_exe_path(Path::new("assets"))?;
 
-    let sdl = sdl2::init().map_err(err_msg)?;
-    let video_subsystem = sdl.video()?;
+    let sdl = sdl2::init().map_err(failure::err_msg)?;
+    let video_subsystem = sdl.video().map_err(failure::err_msg)?;
     let gl_attr = video_subsystem.gl_attr();
     gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
     gl_attr.set_context_version(4, 1);
@@ -35,7 +35,7 @@ fn run() -> Result<(), Error> {
         .resizable()
         .build()?;
 
-    let _gl_context = window.gl_create_context()?;
+    let _gl_context = window.gl_create_context().map_err(failure::err_msg)?;
     let _gl =
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
@@ -130,7 +130,13 @@ fn failure_to_string(e: Error) -> String {
 
     let mut result = String::new();
 
-    for (i, cause) in e.causes().collect::<Vec<_>>().into_iter().rev().enumerate() {
+    for (i, cause) in e
+        .iter_chain()
+        .collect::<Vec<_>>()
+        .into_iter()
+        .rev()
+        .enumerate()
+    {
         if i > 0 {
             let _ = writeln!(&mut result, "    Which caused the following issue:");
         }
