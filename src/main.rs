@@ -50,6 +50,7 @@ fn run() -> Result<(), Error> {
         -0.5, -0.5, 0.0,    1.0, 0.0, 0.0,
         0.5, -0.5, 0.0,     0.0, 1.0, 0.0,
         0.0, 0.5, 0.0,      0.0, 0.0, 1.0,
+        0.0, -0.5, 0.0,     1.0, 1.0, 1.0,
     ];
     let mut vbo: GLuint = 0;
     unsafe {
@@ -113,9 +114,9 @@ fn run() -> Result<(), Error> {
         unsafe {
             gl::BindVertexArray(vao);
             gl::DrawArrays(
-                gl::TRIANGLES,
+                gl::QUADS,
                 0, // starting index in the enabled arrays
-                3, // number of indices to be rendered
+                4, // number of indices to be rendered
             );
         }
 
