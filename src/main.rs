@@ -30,7 +30,7 @@ fn run() -> Result<(), Error> {
     gl_attr.set_context_version(4, 1);
 
     let window = video_subsystem
-        .window("Game", 900, 700)
+        .window("Boulder Dash", 900, 700)
         .opengl()
         .resizable()
         .build()?;
@@ -50,7 +50,7 @@ fn run() -> Result<(), Error> {
         -0.5, -0.5, 0.0,    1.0, 0.0, 0.0,
         0.5, -0.5, 0.0,     0.0, 1.0, 0.0,
         0.0, 0.5, 0.0,      0.0, 0.0, 1.0,
-        0.0, -0.5, 0.0,     1.0, 1.0, 1.0,
+        0.0, -1.5, 0.0,     1.0, 1.0, 1.0,
         0.5, -0.5, 0.0,     0.0, 1.0, 0.0,
         0.0, 0.5, 0.0,      0.0, 0.0, 1.0,
     ];
