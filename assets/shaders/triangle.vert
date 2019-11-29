@@ -9,6 +9,6 @@ out VS_OUTPUT {
 
 void main()
 {
-    gl_Position = vec4(Position.x - Position.y / 10.0, Position.y, Position.z, 1.0);
+    gl_Position = vec4(Position, 1.0);
     OUT.Color = Color;
 }
