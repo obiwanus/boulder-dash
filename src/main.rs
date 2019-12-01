@@ -122,7 +122,7 @@ fn run() -> Result<(), Error> {
             gl::DrawArrays(
                 gl::TRIANGLES,
                 0, // starting index in the enabled arrays
-                6, // number of indices to be rendered
+                9, // number of indices to be rendered
             );
         }
 
