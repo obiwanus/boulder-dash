@@ -50,13 +50,6 @@ fn run() -> Result<(), Error> {
         -0.5, -0.5, 0.0,    1.0, 0.0, 0.0,
         0.5, -0.5, 0.0,     0.0, 1.0, 0.0,
         0.0, 0.5, 0.0,      0.0, 0.0, 1.0,
-        0.0, -1.5, 0.0,     1.0, 1.0, 1.0,
-        0.5, -0.5, 0.0,     0.0, 1.0, 0.0,
-        0.0, 0.5, 0.0,      0.0, 0.0, 1.0,
-        0.0, 0.5, 0.0,      0.0, 0.0, 1.0,
-        0.0, -1.5, 0.0,     1.0, 1.0, 1.0,
-        1.5, -0.5, 0.0,     0.0, 1.0, 0.0,
-        -0.5, 0.5, 0.0,      0.0, 0.0, 1.0,
     ];
     let mut vbo: GLuint = 0;
     unsafe {
@@ -122,7 +115,7 @@ fn run() -> Result<(), Error> {
             gl::DrawArrays(
                 gl::TRIANGLES,
                 0, // starting index in the enabled arrays
-                9, // number of indices to be rendered
+                3, // number of indices to be rendered
             );
         }
 
