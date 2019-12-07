@@ -5,9 +5,4 @@ authors = ["Ivan Ivanov <ivan@ivanovs.info>"]
 edition = "2018"
 
 [dependencies]
-sdl2 = "0.32.2"
-gl = { path = "lib/gl" }
-failure = "0.1.6"
-
-[build-dependencies]
-walkdir = "2.2.9"
+winit = "0.19.5"
