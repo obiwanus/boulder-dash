@@ -1,6 +1,9 @@
 extern crate gl;
 extern crate sdl2;
 
+#[macro_use]
+extern crate failure;
+
 mod shader;
 use shader::Program;
 
@@ -32,6 +35,7 @@ fn main() {
         .vertex_shader("shaders/triangle.vert")
         .fragment_shader("shaders/triangle.frag")
         .link();
+
     shader_program.set_used();
 
     let mut event_pump = sdl.event_pump().unwrap();

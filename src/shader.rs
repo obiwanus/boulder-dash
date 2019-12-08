@@ -1,8 +1,25 @@
+use failure::Fail;
 use gl;
 use gl::types::{GLchar, GLenum, GLint, GLuint};
-use std::error::Error;
 use std::ffi::CString;
 use std::fs;
+use std::io;
+
+#[derive(Debug, Fail)]
+pub enum Error {
+    #[fail(display = "Failed to load shader {}: {}", name, error)]
+    IoError(#[cause] io::Error),
+    #[fail(display = "Failed to compile shader {}: {}", name, message)]
+    CompileError { name: String, message: String },
+    #[fail(display = "Failed to link program: ")]
+    LinkError(String),
+}
+
+impl From<io::Error> for Error {
+    fn from(other: io::Error) -> Error {
+        Error::IoError(other)
+    }
+}
 
 pub struct Program {
     id: GLuint,
@@ -24,8 +41,8 @@ struct Shader {
 }
 
 impl Shader {
-    pub fn new(kind: GLenum, path: &str) -> Result<Self, Box<dyn Error>> {
-        let source = CString::new(fs::read_to_string(path)?)?;
+    pub fn new(kind: GLenum, path: &str) -> Result<Self, Error> {
+        let source = CString::new(fs::read_to_string(path)?).unwrap();
         let id = unsafe { gl::CreateShader(kind) };
         unsafe {
             gl::ShaderSource(id, 1, &source.as_ptr(), std::ptr::null());
@@ -44,7 +61,10 @@ impl Shader {
             unsafe {
                 gl::GetShaderInfoLog(id, len, std::ptr::null_mut(), error.as_ptr() as *mut GLchar);
             }
-            return Err(Box::new(error.to_string_lossy().into_owned()));
+            return Err(Error::CompileError {
+                name: path.to_owned(),
+                message: error.to_string_lossy().into_owned(),
+            });
         }
 
         Ok(Shader { id })
