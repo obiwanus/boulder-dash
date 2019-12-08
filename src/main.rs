@@ -8,6 +8,12 @@ mod shader;
 use shader::Program;
 
 fn main() {
+    if let Err(error) = run() {
+        eprintln!("{}", error_into_string(error))
+    }
+}
+
+fn run() -> Result<(), failure::Error> {
     let sdl = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
 
@@ -23,7 +29,7 @@ fn main() {
         .unwrap();
 
     let _gl_context = window.gl_create_context().unwrap();
-    let gl =
+    let _gl =
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
     unsafe {
@@ -32,9 +38,9 @@ fn main() {
     }
 
     let shader_program = Program::new()
-        .vertex_shader("shaders/triangle.vert")
-        .fragment_shader("shaders/triangle.frag")
-        .link();
+        .vertex_shader("shaders/triangle.vert")?
+        .fragment_shader("shaders/triangle.frag")?
+        .link()?;
 
     shader_program.set_used();
 
@@ -52,4 +58,17 @@ fn main() {
             window.gl_swap_window();
         }
     }
+
+    Ok(())
+}
+
+fn error_into_string(err: failure::Error) -> String {
+    let mut pretty = err.to_string();
+    let mut prev = err.as_fail();
+    while let Some(next) = prev.cause() {
+        pretty.push_str(": ");
+        pretty.push_str(&next.to_string());
+        prev = next;
+    }
+    pretty
 }
