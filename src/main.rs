@@ -38,8 +38,8 @@ fn run() -> Result<(), failure::Error> {
     }
 
     let shader_program = Program::new()
-        .vertex_shader("shaders/triangle.vert")?
-        .fragment_shader("shaders/triangle.frag")?
+        .vertex_shader("assets/shaders/triangle.vert")?
+        .fragment_shader("assets/shaders/triangle.frag")?
         .link()?;
 
     shader_program.set_used();
