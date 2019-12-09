@@ -7,18 +7,16 @@ use std::io;
 
 #[derive(Debug, Fail)]
 pub enum Error {
-    #[fail(display = "I/O Error")]
-    IoError(#[cause] io::Error),
+    #[fail(display = "I/O Error ({})", name)]
+    IoError {
+        name: String,
+        #[cause]
+        inner: io::Error,
+    },
     #[fail(display = "Failed to compile shader {}: {}", name, message)]
     CompileError { name: String, message: String },
     #[fail(display = "Failed to link program: ")]
     LinkError(String),
-}
-
-impl From<io::Error> for Error {
-    fn from(other: io::Error) -> Self {
-        Error::IoError(other)
-    }
 }
 
 pub struct Program {
@@ -106,7 +104,11 @@ struct Shader {
 
 impl Shader {
     pub fn new(kind: GLenum, path: &str) -> Result<Self, Error> {
-        let source = CString::new(fs::read_to_string(path)?).unwrap();
+        let source = fs::read_to_string(path).map_err(|e| Error::IoError {
+            name: path.to_owned(),
+            inner: e,
+        })?;
+        let source = CString::new(source).unwrap();
         let id = unsafe { gl::CreateShader(kind) };
         unsafe {
             gl::ShaderSource(id, 1, &source.as_ptr(), std::ptr::null());

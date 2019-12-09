@@ -1,7 +1,8 @@
-- Make I/O error output nicer
+- Load shaders
 
 
 DONE:
 
 09.12.2019
 - Copy assets next to the executable on build
+- Make I/O error output nicer
