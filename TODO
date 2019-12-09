@@ -1,1 +1,7 @@
+- Make I/O error output nicer
+
+
+DONE:
+
+09.12.2019
 - Copy assets next to the executable on build

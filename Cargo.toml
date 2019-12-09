@@ -5,6 +5,9 @@ authors = ["Ivan Ivanov <ivan@ivanovs.info>"]
 edition = "2018"
 
 [dependencies]
-sdl2 = { version = "0.32.2", features = ["bundled", "static-link"] }
+sdl2 = { version = "0.32.2", features = ["bundled"] }
 gl = "0.14.0"
 failure = "0.1.6"
+
+[build-dependencies]
+walkdir = "2.2.9"
