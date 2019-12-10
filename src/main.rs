@@ -48,9 +48,10 @@ fn run() -> Result<(), failure::Error> {
 
     #[rustfmt::skip]
     let vertices: Vec<f32> = vec![
-        -0.5, 0.5, 0.0,
-        0.5, 0.5, 0.0,
-        0.0, -0.5, 0.0,
+        // positions        // colors
+        -0.5, 0.5, 0.0,     1.0, 0.0, 0.0,
+        0.5, 0.5, 0.0,      0.0, 1.0, 0.0,
+        0.0, -0.5, 0.0,     0.0, 0.0, 1.0,
     ];
     let mut vbo: GLuint = 0;
     let mut vao: GLuint = 0;
@@ -65,15 +66,26 @@ fn run() -> Result<(), failure::Error> {
             vertices.as_ptr() as *const GLvoid,
             gl::STATIC_DRAW,
         );
+        // Positions
         gl::VertexAttribPointer(
             0,
             3,
             gl::FLOAT,
             gl::FALSE,
-            3 * std::mem::size_of::<f32>() as i32,
-            std::ptr::null_mut(),
+            6 * std::mem::size_of::<f32>() as i32,
+            std::ptr::null(),
         );
         gl::EnableVertexAttribArray(0);
+        // Colors
+        gl::VertexAttribPointer(
+            1,
+            3,
+            gl::FLOAT,
+            gl::FALSE,
+            6 * std::mem::size_of::<f32>() as i32,
+            (3 * std::mem::size_of::<f32>()) as *const GLvoid,
+        );
+        gl::EnableVertexAttribArray(1);
         gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
         gl::BindVertexArray(0);
     }
