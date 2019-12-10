@@ -39,27 +39,24 @@ fn run() -> Result<(), failure::Error> {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
-    let shader_program = Program::new()
-        .vertex_shader("assets/shaders/triangle.vert")?
-        .fragment_shader("assets/shaders/triangle.frag")?
-        .link()?;
-
-    shader_program.set_used();
-
     #[rustfmt::skip]
     let vertices: Vec<f32> = vec![
         // positions        // colors
         -0.5, 0.5, 0.0,     1.0, 0.0, 0.0,
         0.5, 0.5, 0.0,      0.0, 1.0, 0.0,
-        0.0, -0.5, 0.0,     0.0, 0.0, 1.0,
+        0.0, 0.1, 0.0,     0.0, 0.0, 1.0,
+
+        0.5, 0.5, 0.0,      0.0, 1.0, 0.0,
+        0.0, 0.1, 0.0,     0.0, 0.0, 1.0,
+        0.0, -0.5, 0.0,     0.0, 1.0, 0.0,
     ];
-    let mut vbo: GLuint = 0;
-    let mut vao: GLuint = 0;
+    let mut vbo_triangle: GLuint = 0;
+    let mut vao_triangle: GLuint = 0;
     unsafe {
-        gl::GenBuffers(1, &mut vbo);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
+        gl::GenBuffers(1, &mut vbo_triangle);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo_triangle);
+        gl::GenVertexArrays(1, &mut vao_triangle);
+        gl::BindVertexArray(vao_triangle);
         gl::BufferData(
             gl::ARRAY_BUFFER,
             (vertices.len() * std::mem::size_of::<f32>()) as isize,
@@ -86,9 +83,51 @@ fn run() -> Result<(), failure::Error> {
             (3 * std::mem::size_of::<f32>()) as *const GLvoid,
         );
         gl::EnableVertexAttribArray(1);
+
         gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
         gl::BindVertexArray(0);
     }
+    let triangle_program = Program::new()
+        .vertex_shader("assets/shaders/triangle/triangle.vert")?
+        .fragment_shader("assets/shaders/triangle/triangle.frag")?
+        .link()?;
+
+    #[rustfmt::skip]
+    let vertices_solid: Vec<f32> = vec![
+        0.0, 0.2, 0.0,
+        0.0, -0.5, 0.0,
+        -0.5, 0.5, 0.0,
+    ];
+    let mut vbo_solid: GLuint = 0;
+    let mut vao_solid: GLuint = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut vbo_solid);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo_solid);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (vertices_solid.len() * std::mem::size_of::<f32>()) as isize,
+            vertices_solid.as_ptr() as *const GLvoid,
+            gl::STATIC_DRAW,
+        );
+        gl::GenVertexArrays(1, &mut vao_solid);
+        gl::BindVertexArray(vao_solid);
+        gl::VertexAttribPointer(
+            0,
+            3,
+            gl::FLOAT,
+            gl::FALSE,
+            3 * std::mem::size_of::<f32>() as i32,
+            std::ptr::null(),
+        );
+        gl::EnableVertexAttribArray(0);
+
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
+        gl::BindVertexArray(0);
+    }
+    let solid_program = Program::new()
+        .vertex_shader("assets/shaders/solid/solid.vert")?
+        .fragment_shader("assets/shaders/solid/solid.frag")?
+        .link()?;
 
     let mut event_pump = sdl.event_pump().unwrap();
     'main: loop {
@@ -97,12 +136,24 @@ fn run() -> Result<(), failure::Error> {
                 sdl2::event::Event::Quit { .. } => break 'main,
                 _ => {}
             }
-
             unsafe {
                 gl::Clear(gl::COLOR_BUFFER_BIT);
-                gl::BindVertexArray(vao);
+            }
+
+            // Draw 2 coloured triangles
+            triangle_program.set_used();
+            unsafe {
+                gl::BindVertexArray(vao_triangle);
+                gl::DrawArrays(gl::TRIANGLES, 0, 6);
+            }
+
+            // Draw 1 solid triangle
+            solid_program.set_used();
+            unsafe {
+                gl::BindVertexArray(vao_solid);
                 gl::DrawArrays(gl::TRIANGLES, 0, 3);
             }
+
             window.gl_swap_window();
         }
     }
