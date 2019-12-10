@@ -1,4 +1,6 @@
-use gl::types::{GLuint, GLvoid};
+use gl::types::{GLchar, GLuint, GLvoid};
+use std::ffi::CString;
+use std::time::SystemTime;
 
 extern crate gl;
 extern crate sdl2;
@@ -87,47 +89,20 @@ fn run() -> Result<(), failure::Error> {
         gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
         gl::BindVertexArray(0);
     }
+
     let triangle_program = Program::new()
         .vertex_shader("assets/shaders/triangle/triangle.vert")?
         .fragment_shader("assets/shaders/triangle/triangle.frag")?
         .link()?;
+    triangle_program.set_used();
 
-    #[rustfmt::skip]
-    let vertices_solid: Vec<f32> = vec![
-        0.0, 0.2, 0.0,
-        0.0, -0.5, 0.0,
-        -0.5, 0.5, 0.0,
-    ];
-    let mut vbo_solid: GLuint = 0;
-    let mut vao_solid: GLuint = 0;
-    unsafe {
-        gl::GenBuffers(1, &mut vbo_solid);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo_solid);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            (vertices_solid.len() * std::mem::size_of::<f32>()) as isize,
-            vertices_solid.as_ptr() as *const GLvoid,
-            gl::STATIC_DRAW,
-        );
-        gl::GenVertexArrays(1, &mut vao_solid);
-        gl::BindVertexArray(vao_solid);
-        gl::VertexAttribPointer(
-            0,
-            3,
-            gl::FLOAT,
-            gl::FALSE,
-            3 * std::mem::size_of::<f32>() as i32,
-            std::ptr::null(),
-        );
-        gl::EnableVertexAttribArray(0);
-
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
-        gl::BindVertexArray(0);
-    }
-    let solid_program = Program::new()
-        .vertex_shader("assets/shaders/solid/solid.vert")?
-        .fragment_shader("assets/shaders/solid/solid.frag")?
-        .link()?;
+    let vertex_color_location = unsafe {
+        gl::GetUniformLocation(
+            triangle_program.id(),
+            CString::new("SolidColor").unwrap().as_ptr() as *const GLchar,
+        )
+    };
+    let start_timestamp = SystemTime::now();
 
     let mut event_pump = sdl.event_pump().unwrap();
     'main: loop {
@@ -140,18 +115,16 @@ fn run() -> Result<(), failure::Error> {
                 gl::Clear(gl::COLOR_BUFFER_BIT);
             }
 
-            // Draw 2 coloured triangles
-            triangle_program.set_used();
+            let now = SystemTime::now()
+                .duration_since(start_timestamp)
+                .unwrap()
+                .as_secs_f32();
+            let color = (now.sin() / 2.0) + 0.5;
+
             unsafe {
+                gl::Uniform4f(vertex_color_location, 0.0, color, 0.1, 1.0);
                 gl::BindVertexArray(vao_triangle);
                 gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            }
-
-            // Draw 1 solid triangle
-            solid_program.set_used();
-            unsafe {
-                gl::BindVertexArray(vao_solid);
-                gl::DrawArrays(gl::TRIANGLES, 0, 3);
             }
 
             window.gl_swap_window();

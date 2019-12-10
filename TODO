@@ -1,4 +1,11 @@
-- Make a basic color animation
+- Adjust the vertex shader so that the triangle is upside down
+- Specify a horizontal offset via a uniform and move the triangle to the right side of the screen
+  in the vertex shader using this offset value
+- Output the vertex position to the fragment shader using the out keyword and set the fragment's
+  color equal to this vertex position (see how even the vertex position values are interpolated
+  across the triangle).
+  Once you managed to do this; try to answer the following question: why is the bottom-left side
+  of our triangle black?
 
 DONE:
 
@@ -6,6 +13,7 @@ DONE:
 - Draw a triangle
 - Draw a coloured triangle
 - Draw 2 triangles next to each other, each using different shaders and vbo/vao
+- Make a basic color animation
 
 09.12.2019
 - Copy assets next to the executable on build
