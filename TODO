@@ -1,6 +1,10 @@
-- Draw a triangle
+- Draw a coloured triangle
+- Draw 2 triangles next to each other, each using different shaders and vbo/vao
 
 DONE:
+
+10.12.2019
+- Draw a triangle
 
 09.12.2019
 - Copy assets next to the executable on build

@@ -1,3 +1,5 @@
+use gl::types::{GLuint, GLvoid};
+
 extern crate gl;
 extern crate sdl2;
 
@@ -44,6 +46,38 @@ fn run() -> Result<(), failure::Error> {
 
     shader_program.set_used();
 
+    #[rustfmt::skip]
+    let vertices: Vec<f32> = vec![
+        -0.5, 0.5, 0.0,
+        0.5, 0.5, 0.0,
+        0.0, -0.5, 0.0,
+    ];
+    let mut vbo: GLuint = 0;
+    let mut vao: GLuint = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut vbo);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+        gl::GenVertexArrays(1, &mut vao);
+        gl::BindVertexArray(vao);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            (vertices.len() * std::mem::size_of::<f32>()) as isize,
+            vertices.as_ptr() as *const GLvoid,
+            gl::STATIC_DRAW,
+        );
+        gl::VertexAttribPointer(
+            0,
+            3,
+            gl::FLOAT,
+            gl::FALSE,
+            3 * std::mem::size_of::<f32>() as i32,
+            std::ptr::null_mut(),
+        );
+        gl::EnableVertexAttribArray(0);
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
+        gl::BindVertexArray(0);
+    }
+
     let mut event_pump = sdl.event_pump().unwrap();
     'main: loop {
         for event in event_pump.poll_iter() {
@@ -54,6 +88,8 @@ fn run() -> Result<(), failure::Error> {
 
             unsafe {
                 gl::Clear(gl::COLOR_BUFFER_BIT);
+                gl::BindVertexArray(vao);
+                gl::DrawArrays(gl::TRIANGLES, 0, 3);
             }
             window.gl_swap_window();
         }
