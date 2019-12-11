@@ -35,6 +35,10 @@ fn run() -> Result<(), failure::Error> {
     let _gl_context = window.gl_create_context().unwrap();
     let _gl =
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
+    println!(
+        "Swap interval: {:?}",
+        video_subsystem.gl_get_swap_interval()
+    );
 
     unsafe {
         gl::Viewport(0, 0, 1024, 768);
