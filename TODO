@@ -1,5 +1,3 @@
-- Specify a horizontal offset via a uniform and move the triangle to the right side of the screen
-  in the vertex shader using this offset value
 - Output the vertex position to the fragment shader using the out keyword and set the fragment's
   color equal to this vertex position (see how even the vertex position values are interpolated
   across the triangle).
@@ -11,6 +9,7 @@ DONE:
 11.12.2019
 - Fixed the redrawing problem
 - Adjust the vertex shader so that the triangle is upside down
+- Move the triangle left and right
 
 10.12.2019
 - Draw a triangle

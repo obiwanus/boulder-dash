@@ -2,8 +2,8 @@
 
 out vec4 Color;
 
-uniform vec4 SolidColor;
+uniform vec4 solid_color;
 
 void main() {
-    Color = SolidColor;
+    Color = solid_color;
 }

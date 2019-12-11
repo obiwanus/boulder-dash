@@ -103,7 +103,13 @@ fn run() -> Result<(), failure::Error> {
     let vertex_color_location = unsafe {
         gl::GetUniformLocation(
             triangle_program.id(),
-            CString::new("SolidColor").unwrap().as_ptr() as *const GLchar,
+            CString::new("solid_color").unwrap().as_ptr() as *const GLchar,
+        )
+    };
+    let vertex_x_offset = unsafe {
+        gl::GetUniformLocation(
+            triangle_program.id(),
+            CString::new("x_offset").unwrap().as_ptr() as *const GLchar,
         )
     };
     let start_timestamp = SystemTime::now();
@@ -124,10 +130,12 @@ fn run() -> Result<(), failure::Error> {
             .duration_since(start_timestamp)
             .unwrap()
             .as_secs_f32();
-        let color = (now.sin() / 2.0) + 0.5;
+        let color = ((now * 2.0).sin() / 2.0) + 0.5;
+        let x_offset = now.sin();
 
         unsafe {
             gl::Uniform4f(vertex_color_location, 0.0, color, 0.1, 1.0);
+            gl::Uniform1f(vertex_x_offset, x_offset);
             gl::BindVertexArray(vao_triangle);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);
         }
