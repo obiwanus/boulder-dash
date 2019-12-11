@@ -111,24 +111,24 @@ fn run() -> Result<(), failure::Error> {
                 sdl2::event::Event::Quit { .. } => break 'main,
                 _ => {}
             }
-            unsafe {
-                gl::Clear(gl::COLOR_BUFFER_BIT);
-            }
-
-            let now = SystemTime::now()
-                .duration_since(start_timestamp)
-                .unwrap()
-                .as_secs_f32();
-            let color = (now.sin() / 2.0) + 0.5;
-
-            unsafe {
-                gl::Uniform4f(vertex_color_location, 0.0, color, 0.1, 1.0);
-                gl::BindVertexArray(vao_triangle);
-                gl::DrawArrays(gl::TRIANGLES, 0, 6);
-            }
-
-            window.gl_swap_window();
         }
+        unsafe {
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+
+        let now = SystemTime::now()
+            .duration_since(start_timestamp)
+            .unwrap()
+            .as_secs_f32();
+        let color = (now.sin() / 2.0) + 0.5;
+
+        unsafe {
+            gl::Uniform4f(vertex_color_location, 0.0, color, 0.1, 1.0);
+            gl::BindVertexArray(vao_triangle);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+        }
+
+        window.gl_swap_window();
     }
 
     Ok(())
