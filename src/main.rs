@@ -1,4 +1,4 @@
-use gl::types::{GLchar, GLuint, GLvoid};
+use gl::types::*;
 use std::ffi::CString;
 use std::time::SystemTime;
 
@@ -13,7 +13,8 @@ use shader::Program;
 
 fn main() {
     if let Err(error) = run() {
-        eprintln!("{}", error_into_string(error))
+        eprintln!("{}", error_into_string(error));
+        std::process::exit(1);
     }
 }
 
@@ -33,8 +34,7 @@ fn run() -> Result<(), failure::Error> {
         .unwrap();
 
     let _gl_context = window.gl_create_context().unwrap();
-    let _gl =
-        gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
+    gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
     println!(
         "Swap interval: {:?}",
         video_subsystem.gl_get_swap_interval()
@@ -152,6 +152,9 @@ fn error_into_string(err: failure::Error) -> String {
     while let Some(next) = prev.cause() {
         pretty.push_str(": ");
         pretty.push_str(&next.to_string());
+        if let Some(backtrace) = next.backtrace() {
+            pretty.push_str(&backtrace.to_string());
+        }
         prev = next;
     }
     pretty

@@ -1,6 +1,6 @@
 use failure::Fail;
 use gl;
-use gl::types::{GLchar, GLenum, GLint, GLuint};
+use gl::types::*;
 use std::ffi::CString;
 use std::fs;
 use std::io;
