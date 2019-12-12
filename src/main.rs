@@ -3,6 +3,9 @@ use std::time::SystemTime;
 
 extern crate gl;
 extern crate sdl2;
+extern crate stb_image;
+
+use stb_image::image::{self, LoadResult};
 
 #[macro_use]
 extern crate failure;
@@ -46,14 +49,14 @@ fn run() -> Result<(), failure::Error> {
 
     #[rustfmt::skip]
     let vertices: Vec<f32> = vec![
-        // positions        // colors
-        -0.5, 0.5, 0.0,     1.0, 0.0, 0.0,
-        0.5, 0.5, 0.0,      0.0, 1.0, 0.0,
-        0.0, 0.1, 0.0,     0.0, 0.0, 1.0,
+        // positions        // tex coords
+        -0.5, 0.5, 0.0,     -0.5, 0.5,
+        0.5, 0.5, 0.0,      0.5, 0.5,
+        0.0, 0.1, 0.0,      0.0, 0.1,
 
-        0.5, 0.5, 0.0,      0.0, 1.0, 0.0,
-        0.0, 0.1, 0.0,     0.0, 0.0, 1.0,
-        0.0, -0.5, 0.0,     0.0, 1.0, 0.0,
+        0.5, 0.5, 0.0,      0.5, 0.5,
+        0.0, 0.1, 0.0,      0.0, 0.1,
+        0.0, -0.5, 0.0,     0.0, -0.5,
     ];
     let mut vbo_triangle: GLuint = 0;
     let mut vao_triangle: GLuint = 0;
@@ -74,17 +77,17 @@ fn run() -> Result<(), failure::Error> {
             3,
             gl::FLOAT,
             gl::FALSE,
-            6 * std::mem::size_of::<f32>() as i32,
+            5 * std::mem::size_of::<f32>() as i32,
             std::ptr::null(),
         );
         gl::EnableVertexAttribArray(0);
-        // Colors
+        // Texture coordinates
         gl::VertexAttribPointer(
             1,
-            3,
+            2,
             gl::FLOAT,
             gl::FALSE,
-            6 * std::mem::size_of::<f32>() as i32,
+            5 * std::mem::size_of::<f32>() as i32,
             (3 * std::mem::size_of::<f32>()) as *const GLvoid,
         );
         gl::EnableVertexAttribArray(1);
@@ -93,13 +96,41 @@ fn run() -> Result<(), failure::Error> {
         gl::BindVertexArray(0);
     }
 
+    let tex_img = match image::load_with_depth("assets/textures/wall.jpg", 3, false) {
+        LoadResult::ImageU8(image) => image,
+        LoadResult::ImageF32(_) => panic!("Image format F32 is not supported"),
+        LoadResult::Error(msg) => panic!("Couldn't load texture: {}", msg),
+    };
+
+    let mut texture: GLuint = 0;
+    unsafe {
+        gl::GenTextures(1, &mut texture);
+        gl::BindTexture(gl::TEXTURE_2D, texture);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
+        gl::TexImage2D(
+            gl::TEXTURE_2D,
+            0,
+            gl::RGB as GLint,
+            tex_img.width as GLint,
+            tex_img.height as GLint,
+            0,
+            gl::RGB,
+            gl::UNSIGNED_BYTE,
+            tex_img.data.as_ptr() as *const std::ffi::c_void,
+        );
+
+        gl::GenerateMipmap(gl::TEXTURE_2D);
+    }
+
     let triangle_program = Program::new()
         .vertex_shader("assets/shaders/triangle/triangle.vert")?
         .fragment_shader("assets/shaders/triangle/triangle.frag")?
         .link()?;
     triangle_program.set_used();
 
-    let vertex_color_location = triangle_program.get_uniform_location("solid_color");
     let vertex_x_offset = triangle_program.get_uniform_location("x_offset");
     let start_timestamp = SystemTime::now();
 
@@ -116,14 +147,11 @@ fn run() -> Result<(), failure::Error> {
         }
 
         let now = SystemTime::now()
-            .duration_since(start_timestamp)
-            .unwrap()
+            .duration_since(start_timestamp)?
             .as_secs_f32();
-        let color = ((now * 2.0).sin() / 2.0) + 0.5;
         let x_offset = now.sin();
 
         unsafe {
-            gl::Uniform4f(vertex_color_location, 0.0, color, 0.1, 1.0);
             gl::Uniform1f(vertex_x_offset, x_offset);
             gl::BindVertexArray(vao_triangle);
             gl::DrawArrays(gl::TRIANGLES, 0, 6);

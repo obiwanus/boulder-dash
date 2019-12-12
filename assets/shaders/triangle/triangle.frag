@@ -1,14 +1,13 @@
 #version 330 core
 
 in VS_OUTPUT {
-    vec3 Color;
-    vec4 Position;
+    vec2 TexCoord;
 } IN;
 
 out vec4 Color;
 
-uniform vec4 solid_color;
+uniform sampler2D Texture;
 
 void main() {
-    Color = IN.Position;
+    Color = texture(Texture, IN.TexCoord);
 }

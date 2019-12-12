@@ -6,7 +6,7 @@ use std::fs;
 use std::io;
 
 #[derive(Debug, Fail)]
-pub enum Error {
+pub enum ShaderError {
     #[fail(display = "I/O Error ({})", name)]
     IoError {
         name: String,
@@ -35,7 +35,7 @@ impl Program {
         }
     }
 
-    pub fn vertex_shader(mut self, path: &str) -> Result<Self, Error> {
+    pub fn vertex_shader(mut self, path: &str) -> Result<Self, ShaderError> {
         let shader = Shader::new(gl::VERTEX_SHADER, path)?;
         unsafe {
             gl::AttachShader(self.id, shader.id());
@@ -45,7 +45,7 @@ impl Program {
         Ok(self)
     }
 
-    pub fn fragment_shader(mut self, path: &str) -> Result<Self, Error> {
+    pub fn fragment_shader(mut self, path: &str) -> Result<Self, ShaderError> {
         let shader = Shader::new(gl::FRAGMENT_SHADER, path)?;
         unsafe {
             gl::AttachShader(self.id, shader.id());
@@ -55,7 +55,7 @@ impl Program {
         Ok(self)
     }
 
-    pub fn link(self) -> Result<Self, Error> {
+    pub fn link(self) -> Result<Self, ShaderError> {
         unsafe {
             gl::LinkProgram(self.id);
         }
@@ -77,7 +77,7 @@ impl Program {
                     error.as_ptr() as *mut GLchar,
                 );
             }
-            return Err(Error::LinkError(error.to_string_lossy().into_owned()));
+            return Err(ShaderError::LinkError(error.to_string_lossy().into_owned()));
         }
 
         Ok(self)
@@ -112,8 +112,8 @@ struct Shader {
 }
 
 impl Shader {
-    pub fn new(kind: GLenum, path: &str) -> Result<Self, Error> {
-        let source = fs::read_to_string(path).map_err(|e| Error::IoError {
+    pub fn new(kind: GLenum, path: &str) -> Result<Self, ShaderError> {
+        let source = fs::read_to_string(path).map_err(|e| ShaderError::IoError {
             name: path.to_owned(),
             inner: e,
         })?;
@@ -136,7 +136,7 @@ impl Shader {
             unsafe {
                 gl::GetShaderInfoLog(id, len, std::ptr::null_mut(), error.as_ptr() as *mut GLchar);
             }
-            return Err(Error::CompileError {
+            return Err(ShaderError::CompileError {
                 name: path.to_owned(),
                 message: error.to_string_lossy().into_owned(),
             });
