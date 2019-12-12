@@ -1,5 +1,4 @@
 use gl::types::*;
-use std::ffi::CString;
 use std::time::SystemTime;
 
 extern crate gl;
@@ -100,18 +99,8 @@ fn run() -> Result<(), failure::Error> {
         .link()?;
     triangle_program.set_used();
 
-    let vertex_color_location = unsafe {
-        gl::GetUniformLocation(
-            triangle_program.id(),
-            CString::new("solid_color").unwrap().as_ptr() as *const GLchar,
-        )
-    };
-    let vertex_x_offset = unsafe {
-        gl::GetUniformLocation(
-            triangle_program.id(),
-            CString::new("x_offset").unwrap().as_ptr() as *const GLchar,
-        )
-    };
+    let vertex_color_location = triangle_program.get_uniform_location("solid_color");
+    let vertex_x_offset = triangle_program.get_uniform_location("x_offset");
     let start_timestamp = SystemTime::now();
 
     let mut event_pump = sdl.event_pump().unwrap();

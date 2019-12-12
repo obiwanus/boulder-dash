@@ -83,13 +83,18 @@ impl Program {
         Ok(self)
     }
 
-    pub fn id(&self) -> GLuint {
-        self.id
-    }
-
     pub fn set_used(&self) {
         unsafe {
             gl::UseProgram(self.id);
+        }
+    }
+
+    pub fn get_uniform_location(&self, name: &str) -> GLint {
+        unsafe {
+            gl::GetUniformLocation(
+                self.id,
+                CString::new(name).unwrap().as_ptr() as *const GLchar,
+            )
         }
     }
 }
