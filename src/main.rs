@@ -2,6 +2,7 @@ use gl::types::*;
 use std::time::SystemTime;
 
 extern crate gl;
+extern crate nalgebra_glm as glm;
 extern crate sdl2;
 extern crate stb_image;
 
@@ -191,7 +192,9 @@ fn run() -> Result<(), failure::Error> {
         .link()?;
     triangle_program.set_used();
 
+    // Uniforms
     let vertex_x_offset = triangle_program.get_uniform_location("x_offset");
+    let vertex_trans = triangle_program.get_uniform_location("trans");
 
     // Set texture uniforms
     let texture0_location = triangle_program.get_uniform_location("texture0");
@@ -218,10 +221,15 @@ fn run() -> Result<(), failure::Error> {
         let now = SystemTime::now()
             .duration_since(start_timestamp)?
             .as_secs_f32();
-        let x_offset = now.sin() / 2.0;
+
+        let x_offset = 0.0; //now.sin() / 2.0;
+
+        let trans = glm::translation(&glm::vec3(0.0, 0.3, 0.0));
+        let trans = trans * glm::rotation(now * glm::pi::<f32>(), &glm::vec3(0.0, 0.0, 1.0));
 
         unsafe {
             gl::Uniform1f(vertex_x_offset, x_offset);
+            gl::UniformMatrix4fv(vertex_trans, 1, gl::FALSE, trans.as_ptr());
             gl::BindVertexArray(vao_triangle);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
             gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null());

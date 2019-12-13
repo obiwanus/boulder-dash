@@ -1,4 +1,4 @@
-- Rotate the rect
+- Do the tranform exercises
 
 DONE:
 
@@ -6,6 +6,7 @@ DONE:
 - Use 2 textures for the triangle
 - Draw a rect
 - Play with textures
+- Rotate the rect
 
 12.12.2019
 - Try using the struct generator for gl (dropped: too much work)
