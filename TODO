@@ -1,4 +1,4 @@
-- Do the tranform exercises
+- Draw something in perspective
 
 DONE:
 
@@ -7,6 +7,7 @@ DONE:
 - Draw a rect
 - Play with textures
 - Rotate the rect
+- Do the tranform exercises
 
 12.12.2019
 - Try using the struct generator for gl (dropped: too much work)

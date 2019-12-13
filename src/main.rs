@@ -128,16 +128,8 @@ fn run() -> Result<(), failure::Error> {
         gl::GenTextures(1, &mut texture0_id);
         gl::ActiveTexture(gl::TEXTURE0);
         gl::BindTexture(gl::TEXTURE_2D, texture0_id);
-        gl::TexParameteri(
-            gl::TEXTURE_2D,
-            gl::TEXTURE_WRAP_S,
-            gl::CLAMP_TO_EDGE as GLint,
-        );
-        gl::TexParameteri(
-            gl::TEXTURE_2D,
-            gl::TEXTURE_WRAP_T,
-            gl::CLAMP_TO_EDGE as GLint,
-        );
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::LINEAR as GLint);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as GLint);
         gl::TexImage2D(
@@ -232,6 +224,17 @@ fn run() -> Result<(), failure::Error> {
             gl::UniformMatrix4fv(vertex_trans, 1, gl::FALSE, trans.as_ptr());
             gl::BindVertexArray(vao_triangle);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
+            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null());
+        }
+
+        let trans = glm::translation(&glm::vec3(-0.3, 0.3, 0.0));
+        let trans = trans
+            * glm::scale(
+                &glm::identity(),
+                &glm::vec3(0.2 * now.sin(), 0.5 * now.cos(), 1.0),
+            );
+        unsafe {
+            gl::UniformMatrix4fv(vertex_trans, 1, gl::FALSE, trans.as_ptr());
             gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null());
         }
 
