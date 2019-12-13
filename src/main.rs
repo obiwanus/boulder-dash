@@ -96,16 +96,22 @@ fn run() -> Result<(), failure::Error> {
         gl::BindVertexArray(0);
     }
 
-    let tex_img = match image::load_with_depth("assets/textures/wall.jpg", 3, false) {
+    unsafe {
+        stb_image::stb_image::bindgen::stbi_set_flip_vertically_on_load(1);
+    }
+
+    // Load texture 0
+    let texture0 = match image::load_with_depth("assets/textures/wall.jpg", 3, false) {
         LoadResult::ImageU8(image) => image,
         LoadResult::ImageF32(_) => panic!("Image format F32 is not supported"),
         LoadResult::Error(msg) => panic!("Couldn't load texture: {}", msg),
     };
 
-    let mut texture: GLuint = 0;
+    let mut texture0_id: GLuint = 0;
     unsafe {
-        gl::GenTextures(1, &mut texture);
-        gl::BindTexture(gl::TEXTURE_2D, texture);
+        gl::GenTextures(1, &mut texture0_id);
+        gl::ActiveTexture(gl::TEXTURE0);
+        gl::BindTexture(gl::TEXTURE_2D, texture0_id);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
@@ -114,12 +120,43 @@ fn run() -> Result<(), failure::Error> {
             gl::TEXTURE_2D,
             0,
             gl::RGB as GLint,
-            tex_img.width as GLint,
-            tex_img.height as GLint,
+            texture0.width as GLint,
+            texture0.height as GLint,
             0,
             gl::RGB,
             gl::UNSIGNED_BYTE,
-            tex_img.data.as_ptr() as *const std::ffi::c_void,
+            texture0.data.as_ptr() as *const std::ffi::c_void,
+        );
+
+        gl::GenerateMipmap(gl::TEXTURE_2D);
+    }
+
+    // Load texture 2
+    let texture1 = match image::load_with_depth("assets/textures/awesomeface.png", 3, false) {
+        LoadResult::ImageU8(image) => image,
+        LoadResult::ImageF32(_) => panic!("Image format F32 is not supported"),
+        LoadResult::Error(msg) => panic!("Couldn't load texture: {}", msg),
+    };
+
+    let mut texture1_id: GLuint = 0;
+    unsafe {
+        gl::GenTextures(1, &mut texture1_id);
+        gl::ActiveTexture(gl::TEXTURE1);
+        gl::BindTexture(gl::TEXTURE_2D, texture1_id);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
+        gl::TexImage2D(
+            gl::TEXTURE_2D,
+            0,
+            gl::RGB as GLint,
+            texture1.width as GLint,
+            texture1.height as GLint,
+            0,
+            gl::RGB,
+            gl::UNSIGNED_BYTE,
+            texture1.data.as_ptr() as *const std::ffi::c_void,
         );
 
         gl::GenerateMipmap(gl::TEXTURE_2D);
@@ -132,6 +169,15 @@ fn run() -> Result<(), failure::Error> {
     triangle_program.set_used();
 
     let vertex_x_offset = triangle_program.get_uniform_location("x_offset");
+
+    // Set texture uniforms
+    let texture0_location = triangle_program.get_uniform_location("texture0");
+    let texture1_location = triangle_program.get_uniform_location("texture1");
+    unsafe {
+        gl::Uniform1i(texture0_location, 0);
+        gl::Uniform1i(texture1_location, 1);
+    }
+
     let start_timestamp = SystemTime::now();
 
     let mut event_pump = sdl.event_pump().unwrap();

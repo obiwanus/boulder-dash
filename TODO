@@ -1,6 +1,10 @@
-- Use 2 textures for the triangle
+-
 
 DONE:
+
+13.12.2019
+- Use 2 textures for the triangle
+
 12.12.2019
 - Try using the struct generator for gl (dropped: too much work)
 - Draw a textured triangle

@@ -6,8 +6,9 @@ in VS_OUTPUT {
 
 out vec4 Color;
 
-uniform sampler2D Texture;
+uniform sampler2D texture0;
+uniform sampler2D texture1;
 
 void main() {
-    Color = texture(Texture, IN.TexCoord);
+    Color = mix(texture(texture0, IN.TexCoord), texture(texture1, vec2(1.0 - IN.TexCoord.x, IN.TexCoord.y)), 0.2);
 }
