@@ -50,16 +50,20 @@ fn run() -> Result<(), failure::Error> {
     #[rustfmt::skip]
     let vertices: Vec<f32> = vec![
         // positions        // tex coords
-        -0.5, 0.5, 0.0,     -0.5, 0.5,
-        0.5, 0.5, 0.0,      0.5, 0.5,
-        0.0, 0.1, 0.0,      0.0, 0.1,
-
-        0.5, 0.5, 0.0,      0.5, 0.5,
-        0.0, 0.1, 0.0,      0.0, 0.1,
-        0.0, -0.5, 0.0,     0.0, -0.5,
+        0.5, 0.5, 0.0,      0.5, 0.5,       // top right
+        0.5, -0.5, 0.0,     0.5, -0.5,      // bottom right
+       -0.5, -0.5, 0.0,    -0.5, -0.5,      // bottom left
+       -0.5, 0.5, 0.0,     -0.5, 0.5,       // top left
     ];
+    #[rustfmt::skip]
+    let indices: Vec<u32> = vec![
+        0, 1, 3,
+        1, 2, 3,
+    ];
+
     let mut vbo_triangle: GLuint = 0;
     let mut vao_triangle: GLuint = 0;
+    let mut ebo_triangle: GLuint = 0;
     unsafe {
         gl::GenBuffers(1, &mut vbo_triangle);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo_triangle);
@@ -92,6 +96,17 @@ fn run() -> Result<(), failure::Error> {
         );
         gl::EnableVertexAttribArray(1);
 
+        // Element buffer
+        gl::GenBuffers(1, &mut ebo_triangle);
+        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
+        gl::BufferData(
+            gl::ELEMENT_ARRAY_BUFFER,
+            (indices.len() * std::mem::size_of::<u32>()) as isize,
+            indices.as_ptr() as *const GLvoid,
+            gl::STATIC_DRAW,
+        );
+        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+
         gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
         gl::BindVertexArray(0);
     }
@@ -112,10 +127,18 @@ fn run() -> Result<(), failure::Error> {
         gl::GenTextures(1, &mut texture0_id);
         gl::ActiveTexture(gl::TEXTURE0);
         gl::BindTexture(gl::TEXTURE_2D, texture0_id);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
+        gl::TexParameteri(
+            gl::TEXTURE_2D,
+            gl::TEXTURE_WRAP_S,
+            gl::CLAMP_TO_EDGE as GLint,
+        );
+        gl::TexParameteri(
+            gl::TEXTURE_2D,
+            gl::TEXTURE_WRAP_T,
+            gl::CLAMP_TO_EDGE as GLint,
+        );
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as GLint);
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,
@@ -195,12 +218,13 @@ fn run() -> Result<(), failure::Error> {
         let now = SystemTime::now()
             .duration_since(start_timestamp)?
             .as_secs_f32();
-        let x_offset = now.sin();
+        let x_offset = now.sin() / 2.0;
 
         unsafe {
             gl::Uniform1f(vertex_x_offset, x_offset);
             gl::BindVertexArray(vao_triangle);
-            gl::DrawArrays(gl::TRIANGLES, 0, 6);
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
+            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null());
         }
 
         window.gl_swap_window();

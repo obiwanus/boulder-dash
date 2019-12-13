@@ -10,5 +10,5 @@ uniform sampler2D texture0;
 uniform sampler2D texture1;
 
 void main() {
-    Color = mix(texture(texture0, IN.TexCoord), texture(texture1, vec2(1.0 - IN.TexCoord.x, IN.TexCoord.y)), 0.2);
+    Color = mix(texture(texture0, (IN.TexCoord + 0.25) / 5.0), texture(texture1, (IN.TexCoord - 0.5) * 2.0), 0.2);
 }
