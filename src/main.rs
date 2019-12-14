@@ -207,7 +207,6 @@ fn run() -> Result<(), failure::Error> {
         0.1,
         100.0,
     );
-
     let transform = proj * view;
 
     let triangle_program = Program::new()
@@ -232,6 +231,19 @@ fn run() -> Result<(), failure::Error> {
     let start_timestamp = SystemTime::now();
     let model = glm::rotation(-0.25 * glm::pi::<f32>(), &glm::vec3(0.0, 0.0, 1.0));
 
+    let cube_positions = vec![
+        glm::vec3(0.0, 0.0, 0.0),
+        glm::vec3(2.0, 5.0, -15.0),
+        glm::vec3(-1.5, -2.2, -2.5),
+        glm::vec3(-3.8, -2.0, -12.3),
+        glm::vec3(2.4, -0.4, -3.5),
+        glm::vec3(-1.7, 3.0, -7.5),
+        glm::vec3(1.3, -2.0, -2.5),
+        glm::vec3(1.5, 2.0, -2.5),
+        glm::vec3(1.5, 0.2, -1.5),
+        glm::vec3(-1.3, 1.0, -1.5),
+    ];
+
     let mut event_pump = sdl.event_pump().unwrap();
     'main: loop {
         for event in event_pump.poll_iter() {
@@ -250,14 +262,19 @@ fn run() -> Result<(), failure::Error> {
             .as_secs_f32();
 
         let angle = seconds_elapsed * glm::pi::<f32>() / 5.0;
-        let model = glm::rotate(&model, angle, &glm::vec3(1.0, 0.0, 0.0));
 
         unsafe {
-            gl::UniformMatrix4fv(vertex_model, 1, gl::FALSE, model.as_ptr());
-
             gl::BindVertexArray(vao_triangle);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
-            gl::DrawElements(gl::TRIANGLES, 36, gl::UNSIGNED_INT, std::ptr::null());
+        }
+
+        for pos in cube_positions.iter() {
+            let model = glm::translate(&model, pos);
+            let model = glm::rotate(&model, angle, pos);
+            unsafe {
+                gl::UniformMatrix4fv(vertex_model, 1, gl::FALSE, model.as_ptr());
+                gl::DrawElements(gl::TRIANGLES, 36, gl::UNSIGNED_INT, std::ptr::null());
+            }
         }
 
         window.gl_swap_window();
