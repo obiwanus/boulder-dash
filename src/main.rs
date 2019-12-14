@@ -29,8 +29,11 @@ fn run() -> Result<(), failure::Error> {
     gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
     gl_attr.set_context_version(4, 1);
 
+    const SCREEN_WIDTH: f32 = 1024.0;
+    const SCREEN_HEIGHT: f32 = 768.0;
+
     let window = video_subsystem
-        .window("Boulder Dash", 1024, 768)
+        .window("Boulder Dash", SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32)
         .opengl()
         .resizable()
         .build()
@@ -178,6 +181,13 @@ fn run() -> Result<(), failure::Error> {
         gl::GenerateMipmap(gl::TEXTURE_2D);
     }
 
+    // Transformations
+    let model = glm::rotation(-0.25 * glm::pi::<f32>(), &glm::vec3(1.0, 0.0, 0.0));
+    let view = glm::translation(&glm::vec3(0.0, 0.0, -3.0));
+    let proj = glm::perspective(SCREEN_WIDTH / SCREEN_HEIGHT, 0.25 * glm::pi::<f32>(), 0.1, 100.0);
+
+    let transform = proj * view * model;
+
     let triangle_program = Program::new()
         .vertex_shader("assets/shaders/triangle/triangle.vert")?
         .fragment_shader("assets/shaders/triangle/triangle.frag")?
@@ -185,7 +195,6 @@ fn run() -> Result<(), failure::Error> {
     triangle_program.set_used();
 
     // Uniforms
-    let vertex_x_offset = triangle_program.get_uniform_location("x_offset");
     let vertex_trans = triangle_program.get_uniform_location("trans");
 
     // Set texture uniforms
@@ -195,8 +204,6 @@ fn run() -> Result<(), failure::Error> {
         gl::Uniform1i(texture0_location, 0);
         gl::Uniform1i(texture1_location, 1);
     }
-
-    let start_timestamp = SystemTime::now();
 
     let mut event_pump = sdl.event_pump().unwrap();
     'main: loop {
@@ -210,31 +217,10 @@ fn run() -> Result<(), failure::Error> {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
-        let now = SystemTime::now()
-            .duration_since(start_timestamp)?
-            .as_secs_f32();
-
-        let x_offset = 0.0; //now.sin() / 2.0;
-
-        let trans = glm::translation(&glm::vec3(0.0, 0.3, 0.0));
-        let trans = trans * glm::rotation(now * glm::pi::<f32>(), &glm::vec3(0.0, 0.0, 1.0));
-
         unsafe {
-            gl::Uniform1f(vertex_x_offset, x_offset);
-            gl::UniformMatrix4fv(vertex_trans, 1, gl::FALSE, trans.as_ptr());
+            gl::UniformMatrix4fv(vertex_trans, 1, gl::FALSE, transform.as_ptr());
             gl::BindVertexArray(vao_triangle);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
-            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null());
-        }
-
-        let trans = glm::translation(&glm::vec3(-0.3, 0.3, 0.0));
-        let trans = trans
-            * glm::scale(
-                &glm::identity(),
-                &glm::vec3(0.2 * now.sin(), 0.5 * now.cos(), 1.0),
-            );
-        unsafe {
-            gl::UniformMatrix4fv(vertex_trans, 1, gl::FALSE, trans.as_ptr());
             gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null());
         }
 

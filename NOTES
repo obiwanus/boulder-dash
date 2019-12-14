@@ -1,0 +1,7 @@
+- Make a program that transforms everything into the world space
+  using a perspective projection matrix, so that we can look from
+  the side and see what it looks like in normalized coordinates
+
+- Fluid simulation in 3d
+
+- Mercury
