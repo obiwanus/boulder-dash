@@ -28,6 +28,8 @@ fn run() -> Result<(), failure::Error> {
     let gl_attr = video_subsystem.gl_attr();
     gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
     gl_attr.set_context_version(4, 1);
+    gl_attr.set_depth_size(16);
+    gl_attr.set_double_buffer(true);
 
     const SCREEN_WIDTH: f32 = 1024.0;
     const SCREEN_HEIGHT: f32 = 768.0;
@@ -49,20 +51,36 @@ fn run() -> Result<(), failure::Error> {
     unsafe {
         gl::Viewport(0, 0, 1024, 768);
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
+        gl::Enable(gl::DEPTH_TEST);
     }
 
     #[rustfmt::skip]
     let vertices: Vec<f32> = vec![
         // positions        // tex coords
-        0.5, 0.5, 0.0,      0.5, 0.5,       // top right
-        0.5, -0.5, 0.0,     0.5, -0.5,      // bottom right
-       -0.5, -0.5, 0.0,    -0.5, -0.5,      // bottom left
-       -0.5, 0.5, 0.0,     -0.5, 0.5,       // top left
+        0.5, 0.5, 0.5,      0.5, 0.5,       // 0
+        0.5, -0.5, 0.5,     0.5, -0.5,      // 1
+       -0.5, -0.5, 0.5,    -0.5, -0.5,      // 2
+       -0.5, 0.5, 0.5,     -0.5, 0.5,       // 3
+
+        0.5, 0.5, -0.5,     0.5, 0.5,       // 4
+        0.5, -0.5, -0.5,    0.5, -0.5,      // 5
+       -0.5, -0.5, -0.5,   -0.5, -0.5,      // 6
+       -0.5, 0.5, -0.5,    -0.5, 0.5,       // 7
     ];
     #[rustfmt::skip]
     let indices: Vec<u32> = vec![
-        0, 1, 3,
+        0, 1, 3, // Front
         1, 2, 3,
+        7, 4, 6, // Back
+        6, 5, 4,
+        4, 5, 0, // Right
+        5, 1, 0,
+        3, 2, 7, // Left
+        2, 6, 7,
+        4, 0, 7, // Top
+        0, 3, 7,
+        1, 5, 2, // Bottom
+        5, 6, 2,
     ];
 
     let mut vbo_triangle: GLuint = 0;
@@ -131,10 +149,10 @@ fn run() -> Result<(), failure::Error> {
         gl::GenTextures(1, &mut texture0_id);
         gl::ActiveTexture(gl::TEXTURE0);
         gl::BindTexture(gl::TEXTURE_2D, texture0_id);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::LINEAR as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::LINEAR as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,
@@ -182,11 +200,15 @@ fn run() -> Result<(), failure::Error> {
     }
 
     // Transformations
-    let model = glm::rotation(-0.25 * glm::pi::<f32>(), &glm::vec3(1.0, 0.0, 0.0));
     let view = glm::translation(&glm::vec3(0.0, 0.0, -3.0));
-    let proj = glm::perspective(SCREEN_WIDTH / SCREEN_HEIGHT, 0.25 * glm::pi::<f32>(), 0.1, 100.0);
+    let proj = glm::perspective(
+        SCREEN_WIDTH / SCREEN_HEIGHT,
+        0.25 * glm::pi::<f32>(),
+        0.1,
+        100.0,
+    );
 
-    let transform = proj * view * model;
+    let transform = proj * view;
 
     let triangle_program = Program::new()
         .vertex_shader("assets/shaders/triangle/triangle.vert")?
@@ -196,14 +218,19 @@ fn run() -> Result<(), failure::Error> {
 
     // Uniforms
     let vertex_trans = triangle_program.get_uniform_location("trans");
+    let vertex_model = triangle_program.get_uniform_location("model");
 
-    // Set texture uniforms
     let texture0_location = triangle_program.get_uniform_location("texture0");
     let texture1_location = triangle_program.get_uniform_location("texture1");
+
     unsafe {
+        gl::UniformMatrix4fv(vertex_trans, 1, gl::FALSE, transform.as_ptr());
         gl::Uniform1i(texture0_location, 0);
         gl::Uniform1i(texture1_location, 1);
     }
+
+    let start_timestamp = SystemTime::now();
+    let model = glm::rotation(-0.25 * glm::pi::<f32>(), &glm::vec3(0.0, 0.0, 1.0));
 
     let mut event_pump = sdl.event_pump().unwrap();
     'main: loop {
@@ -214,14 +241,23 @@ fn run() -> Result<(), failure::Error> {
             }
         }
         unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
+        let seconds_elapsed = SystemTime::now()
+            .duration_since(start_timestamp)
+            .unwrap()
+            .as_secs_f32();
+
+        let angle = seconds_elapsed * glm::pi::<f32>() / 5.0;
+        let model = glm::rotate(&model, angle, &glm::vec3(1.0, 0.0, 0.0));
+
         unsafe {
-            gl::UniformMatrix4fv(vertex_trans, 1, gl::FALSE, transform.as_ptr());
+            gl::UniformMatrix4fv(vertex_model, 1, gl::FALSE, model.as_ptr());
+
             gl::BindVertexArray(vao_triangle);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
-            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_INT, std::ptr::null());
+            gl::DrawElements(gl::TRIANGLES, 36, gl::UNSIGNED_INT, std::ptr::null());
         }
 
         window.gl_swap_window();
