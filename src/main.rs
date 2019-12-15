@@ -199,15 +199,17 @@ fn run() -> Result<(), failure::Error> {
         gl::GenerateMipmap(gl::TEXTURE_2D);
     }
 
+    // Camera
+    let camera_pos = glm::vec3(0.0, 0.0, 10.0);
+    let camera_target = glm::vec3(0.0, 0.0, 0.0);
+
     // Transformations
-    let view = glm::translation(&glm::vec3(0.0, 0.0, -3.0));
     let proj = glm::perspective(
         SCREEN_WIDTH / SCREEN_HEIGHT,
         0.25 * glm::pi::<f32>(),
         0.1,
         100.0,
     );
-    let transform = proj * view;
 
     let triangle_program = Program::new()
         .vertex_shader("assets/shaders/triangle/triangle.vert")?
@@ -216,14 +218,15 @@ fn run() -> Result<(), failure::Error> {
     triangle_program.set_used();
 
     // Uniforms
-    let vertex_trans = triangle_program.get_uniform_location("trans");
+    let vertex_proj = triangle_program.get_uniform_location("proj");
+    let vertex_view = triangle_program.get_uniform_location("view");
     let vertex_model = triangle_program.get_uniform_location("model");
 
     let texture0_location = triangle_program.get_uniform_location("texture0");
     let texture1_location = triangle_program.get_uniform_location("texture1");
 
     unsafe {
-        gl::UniformMatrix4fv(vertex_trans, 1, gl::FALSE, transform.as_ptr());
+        gl::UniformMatrix4fv(vertex_proj, 1, gl::FALSE, proj.as_ptr());
         gl::Uniform1i(texture0_location, 0);
         gl::Uniform1i(texture1_location, 1);
     }
@@ -261,16 +264,22 @@ fn run() -> Result<(), failure::Error> {
             .unwrap()
             .as_secs_f32();
 
-        let angle = seconds_elapsed * glm::pi::<f32>() / 5.0;
-
         unsafe {
             gl::BindVertexArray(vao_triangle);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
         }
 
+        let angle = seconds_elapsed * glm::pi::<f32>() / 3.0;
+        let camera_pos = glm::rotate_vec3(&camera_pos, angle, &glm::vec3(0.0, 1.0, 0.0));
+        let view = glm::look_at(&camera_pos, &camera_target, &glm::vec3(0.0, 1.0, 0.0));
+        unsafe {
+            gl::UniformMatrix4fv(vertex_view, 1, gl::FALSE, view.as_ptr());
+        }
+
+        let angle = seconds_elapsed * glm::pi::<f32>() / 5.0;
         for pos in cube_positions.iter() {
             let model = glm::translate(&model, pos);
-            let model = glm::rotate(&model, angle, pos);
+            let model = glm::rotate(&model, angle, pos); // rotate around position to get different directions
             unsafe {
                 gl::UniformMatrix4fv(vertex_model, 1, gl::FALSE, model.as_ptr());
                 gl::DrawElements(gl::TRIANGLES, 36, gl::UNSIGNED_INT, std::ptr::null());
