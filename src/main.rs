@@ -6,6 +6,8 @@ extern crate nalgebra_glm as glm;
 extern crate sdl2;
 extern crate stb_image;
 
+use sdl2::keyboard::Scancode;
+
 use stb_image::image::{self, LoadResult};
 
 #[macro_use]
@@ -200,8 +202,10 @@ fn run() -> Result<(), failure::Error> {
     }
 
     // Camera
-    let camera_pos = glm::vec3(0.0, 0.0, 10.0);
+    let camera_up = glm::vec3(0.0, 1.0, 0.0);
+    let mut camera_pos = glm::vec3(0.0, 0.0, 10.0);
     let camera_target = glm::vec3(0.0, 0.0, 0.0);
+    let mut camera_front = glm::normalize(&(camera_target - camera_pos));
 
     // Transformations
     let proj = glm::perspective(
@@ -255,6 +259,26 @@ fn run() -> Result<(), failure::Error> {
                 _ => {}
             }
         }
+
+        // Move around
+        let camera_speed = 0.5;
+        let keyboard = event_pump.keyboard_state();
+        if keyboard.is_scancode_pressed(Scancode::W) {
+            camera_pos += camera_speed * camera_front;
+        }
+        if keyboard.is_scancode_pressed(Scancode::S) {
+            camera_pos -= camera_speed * camera_front;
+        }
+        if keyboard.is_scancode_pressed(Scancode::A) {
+            let right = glm::normalize(&glm::cross(&camera_front, &camera_up));
+            camera_pos -= right * camera_speed;
+        }
+        if keyboard.is_scancode_pressed(Scancode::D) {
+            let right = glm::normalize(&glm::cross(&camera_front, &camera_up));
+            camera_pos += right * camera_speed;
+        }
+        camera_front = glm::normalize(&(camera_target - camera_pos));
+
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
@@ -269,8 +293,6 @@ fn run() -> Result<(), failure::Error> {
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
         }
 
-        let angle = seconds_elapsed * glm::pi::<f32>() / 3.0;
-        let camera_pos = glm::rotate_vec3(&camera_pos, angle, &glm::vec3(0.0, 1.0, 0.0));
         let view = glm::look_at(&camera_pos, &camera_target, &glm::vec3(0.0, 1.0, 0.0));
         unsafe {
             gl::UniformMatrix4fv(vertex_view, 1, gl::FALSE, view.as_ptr());
