@@ -204,8 +204,7 @@ fn run() -> Result<(), failure::Error> {
     // Camera
     let camera_up = glm::vec3(0.0, 1.0, 0.0);
     let mut camera_pos = glm::vec3(0.0, 0.0, 10.0);
-    let camera_target = glm::vec3(0.0, 0.0, 0.0);
-    let mut camera_front = glm::normalize(&(camera_target - camera_pos));
+    let camera_front = glm::normalize(&(glm::vec3(0.0, 0.0, 0.0) - camera_pos));
 
     // Transformations
     let proj = glm::perspective(
@@ -283,7 +282,6 @@ fn run() -> Result<(), failure::Error> {
             let right = glm::normalize(&glm::cross(&camera_front, &camera_up));
             camera_pos += right * camera_speed;
         }
-        camera_front = glm::normalize(&(camera_target - camera_pos));
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
@@ -299,7 +297,7 @@ fn run() -> Result<(), failure::Error> {
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
         }
 
-        let view = glm::look_at(&camera_pos, &camera_target, &glm::vec3(0.0, 1.0, 0.0));
+        let view = glm::look_at(&camera_pos, &(camera_pos + camera_front), &camera_up);
         unsafe {
             gl::UniformMatrix4fv(vertex_view, 1, gl::FALSE, view.as_ptr());
         }
