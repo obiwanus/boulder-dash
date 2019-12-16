@@ -5,6 +5,7 @@ DONE:
 
 16.12.2019
 - Walk around with camera (keep looking at the origin)
+- Move dependent on delta time
 
 15.12.2019
 - Move the camera around

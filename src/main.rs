@@ -235,7 +235,6 @@ fn run() -> Result<(), failure::Error> {
         gl::Uniform1i(texture1_location, 1);
     }
 
-    let start_timestamp = SystemTime::now();
     let model = glm::rotation(-0.25 * glm::pi::<f32>(), &glm::vec3(0.0, 0.0, 1.0));
 
     let cube_positions = vec![
@@ -251,8 +250,15 @@ fn run() -> Result<(), failure::Error> {
         glm::vec3(-1.3, 1.0, -1.5),
     ];
 
+    let start_timestamp = SystemTime::now();
+    let mut frame_start = SystemTime::now();
+
     let mut event_pump = sdl.event_pump().unwrap();
     'main: loop {
+        let now = SystemTime::now();
+        let delta_time = now.duration_since(frame_start).unwrap().as_secs_f32();
+        frame_start = now;
+
         for event in event_pump.poll_iter() {
             match event {
                 sdl2::event::Event::Quit { .. } => break 'main,
@@ -261,7 +267,7 @@ fn run() -> Result<(), failure::Error> {
         }
 
         // Move around
-        let camera_speed = 0.5;
+        let camera_speed = 10.0 * delta_time;
         let keyboard = event_pump.keyboard_state();
         if keyboard.is_scancode_pressed(Scancode::W) {
             camera_pos += camera_speed * camera_front;
