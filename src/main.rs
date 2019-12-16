@@ -204,7 +204,9 @@ fn run() -> Result<(), failure::Error> {
     // Camera
     let camera_up = glm::vec3(0.0, 1.0, 0.0);
     let mut camera_pos = glm::vec3(0.0, 0.0, 10.0);
-    let camera_front = glm::normalize(&(glm::vec3(0.0, 0.0, 0.0) - camera_pos));
+    // let mut camera_direction = glm::normalize(&(glm::vec3(0.0, 0.0, 0.0) - camera_pos));
+    let mut camera_pitch = 0.0;
+    let mut camera_yaw = 0.0;
 
     // Transformations
     let proj = glm::perspective(
@@ -265,21 +267,43 @@ fn run() -> Result<(), failure::Error> {
             }
         }
 
+        // Look around
+        let mouse_state = event_pump.relative_mouse_state();
+        let sensitivity = 0.002;
+        {
+            camera_pitch += -mouse_state.y() as f32 * sensitivity;
+            let max_pitch = 0.49 * glm::pi::<f32>();
+            let min_pitch = -max_pitch;
+            if camera_pitch > max_pitch {
+                camera_pitch = max_pitch;
+            }
+            if camera_pitch < min_pitch {
+                camera_pitch = min_pitch;
+            }
+        }
+        camera_yaw += mouse_state.x() as f32 * sensitivity;
+
+        let camera_direction = glm::normalize(&glm::vec3(
+            camera_pitch.cos() * camera_yaw.cos(),
+            camera_pitch.sin(),
+            camera_pitch.cos() * camera_yaw.sin(),
+        ));
+
         // Move around
         let camera_speed = 10.0 * delta_time;
         let keyboard = event_pump.keyboard_state();
         if keyboard.is_scancode_pressed(Scancode::W) {
-            camera_pos += camera_speed * camera_front;
+            camera_pos += camera_speed * camera_direction;
         }
         if keyboard.is_scancode_pressed(Scancode::S) {
-            camera_pos -= camera_speed * camera_front;
+            camera_pos -= camera_speed * camera_direction;
         }
         if keyboard.is_scancode_pressed(Scancode::A) {
-            let right = glm::normalize(&glm::cross(&camera_front, &camera_up));
+            let right = glm::normalize(&glm::cross(&camera_direction, &camera_up));
             camera_pos -= right * camera_speed;
         }
         if keyboard.is_scancode_pressed(Scancode::D) {
-            let right = glm::normalize(&glm::cross(&camera_front, &camera_up));
+            let right = glm::normalize(&glm::cross(&camera_direction, &camera_up));
             camera_pos += right * camera_speed;
         }
 
@@ -297,7 +321,7 @@ fn run() -> Result<(), failure::Error> {
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
         }
 
-        let view = glm::look_at(&camera_pos, &(camera_pos + camera_front), &camera_up);
+        let view = glm::look_at(&camera_pos, &(camera_pos + camera_direction), &camera_up);
         unsafe {
             gl::UniformMatrix4fv(vertex_view, 1, gl::FALSE, view.as_ptr());
         }

@@ -1,4 +1,6 @@
-- Look around with camera
+- Redesign the camera code so it's nicer
+- Hide the mouse cursor
+- Look around even if the pointer has reached the edge of the window
 
 DONE:
 
@@ -6,6 +8,7 @@ DONE:
 - Walk around with camera (keep looking at the origin)
 - Move dependent on delta time
 - Strafe
+- Look around with camera (really bad)
 
 15.12.2019
 - Move the camera around
