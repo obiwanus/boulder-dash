@@ -55,13 +55,17 @@ impl Camera {
         self
     }
 
-    // TODO:
-    // Sets direction, right and Euler angles accordingly
-    // pub fn look_at(self, target: Vec3) -> Self {
-    //     let new_direction = glm::normalize(&(target - self.position));
-    //     glm::rotation(angle: N, v: &TVec3<N>)
-    //     self
-    // }
+    /// Point the camera at the target.
+    /// Sets direction, right and Euler angles accordingly
+    pub fn look_at(mut self, target: Vec3) -> Self {
+        self.direction = glm::normalize(&(target - self.position));
+        let (x, y, z) = (self.direction.x, self.direction.y, self.direction.z);
+        self.pitch = y.asin();
+        self.pitch = clamp(self.pitch, PITCH_MIN, PITCH_MAX);
+        self.yaw = (z / x).atan();
+        self.right = self.recalculate_right();
+        self
+    }
 
     pub fn set_aspect_ratio(mut self, value: f32) -> Self {
         self.aspect_ratio = value;
@@ -100,7 +104,11 @@ impl Camera {
             self.pitch.sin(),
             self.pitch.cos() * self.yaw.sin(),
         ));
-        self.right = glm::normalize(&glm::cross(&self.direction, &self.up));
+        self.right = self.recalculate_right();
+    }
+
+    fn recalculate_right(&self) -> Vec3 {
+        glm::normalize(&glm::cross(&self.direction, &self.up))
     }
 
     /// Calculate vertical FOV based on zoom level

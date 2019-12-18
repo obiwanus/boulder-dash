@@ -1,5 +1,3 @@
-- Make a look_at method for the camera
-- Restrict camera movement to the xz plane
 - Try creating a view matrix without using glm::look_at
 - Move on to the lighting tutorial
 
@@ -11,6 +9,8 @@ DONE:
 - Figured out how to get the camera direction by using trigonometry
 - Zoom by changing FOV
 - Redesign the camera code so it's nicer
+- Restrict camera movement to the xz plane
+- Make a look_at method for the camera
 
 16.12.2019
 - Walk around with camera (keep looking at the origin)

@@ -243,7 +243,8 @@ fn run() -> Result<(), failure::Error> {
 
     let mut camera = Camera::new()
         .set_position(glm::vec3(0.0, 0.0, 10.0))
-        .set_aspect_ratio(SCREEN_WIDTH / SCREEN_HEIGHT);
+        .set_aspect_ratio(SCREEN_WIDTH / SCREEN_HEIGHT)
+        .look_at(glm::vec3(0.0, 0.0, 0.0));
 
     let start_timestamp = SystemTime::now();
     let mut frame_start = SystemTime::now();
