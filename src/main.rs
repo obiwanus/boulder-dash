@@ -36,6 +36,8 @@ fn run() -> Result<(), failure::Error> {
     const SCREEN_WIDTH: f32 = 1024.0;
     const SCREEN_HEIGHT: f32 = 768.0;
 
+    let pi: f32 = glm::pi();
+
     let window = video_subsystem
         .window("Boulder Dash", SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32)
         .opengl()
@@ -208,14 +210,6 @@ fn run() -> Result<(), failure::Error> {
     let mut camera_pitch = 0.0;
     let mut camera_yaw = 0.0;
 
-    // Transformations
-    let proj = glm::perspective(
-        SCREEN_WIDTH / SCREEN_HEIGHT,
-        0.25 * glm::pi::<f32>(),
-        0.1,
-        100.0,
-    );
-
     let triangle_program = Program::new()
         .vertex_shader("assets/shaders/triangle/triangle.vert")?
         .fragment_shader("assets/shaders/triangle/triangle.frag")?
@@ -231,12 +225,12 @@ fn run() -> Result<(), failure::Error> {
     let texture1_location = triangle_program.get_uniform_location("texture1");
 
     unsafe {
-        gl::UniformMatrix4fv(vertex_proj, 1, gl::FALSE, proj.as_ptr());
         gl::Uniform1i(texture0_location, 0);
         gl::Uniform1i(texture1_location, 1);
     }
 
-    let model = glm::rotation(-0.25 * glm::pi::<f32>(), &glm::vec3(0.0, 0.0, 1.0));
+    let model = glm::rotation(-0.25 * pi, &glm::vec3(0.0, 0.0, 1.0));
+    let mut fov = 0.5 * pi;
 
     let cube_positions = vec![
         glm::vec3(0.0, 0.0, 0.0),
@@ -263,6 +257,19 @@ fn run() -> Result<(), failure::Error> {
         for event in event_pump.poll_iter() {
             match event {
                 sdl2::event::Event::Quit { .. } => break 'main,
+                sdl2::event::Event::MouseWheel { y, .. } => {
+                    let min_fov = 0.01 * pi;
+                    let max_fov = 0.5 * pi;
+                    if fov >= min_fov && fov <= max_fov {
+                        fov -= 0.02 * (y as f32);
+                    }
+                    if fov < min_fov {
+                        fov = min_fov;
+                    }
+                    if fov > max_fov {
+                        fov = max_fov;
+                    }
+                }
                 _ => {}
             }
         }
@@ -272,7 +279,7 @@ fn run() -> Result<(), failure::Error> {
         let sensitivity = 0.005;
         {
             camera_pitch += -mouse_state.y() as f32 * sensitivity;
-            let max_pitch = 0.49 * glm::pi::<f32>();
+            let max_pitch = 0.49 * pi;
             let min_pitch = -max_pitch;
             if camera_pitch > max_pitch {
                 camera_pitch = max_pitch;
@@ -321,12 +328,16 @@ fn run() -> Result<(), failure::Error> {
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
         }
 
+        // Transformations
+
+        let proj = glm::perspective(SCREEN_WIDTH / SCREEN_HEIGHT, fov, 0.1, 100.0);
         let view = glm::look_at(&camera_pos, &(camera_pos + camera_direction), &camera_up);
         unsafe {
+            gl::UniformMatrix4fv(vertex_proj, 1, gl::FALSE, proj.as_ptr());
             gl::UniformMatrix4fv(vertex_view, 1, gl::FALSE, view.as_ptr());
         }
 
-        let angle = seconds_elapsed * glm::pi::<f32>() / 5.0;
+        let angle = seconds_elapsed * pi / 5.0;
         for pos in cube_positions.iter() {
             let model = glm::translate(&model, pos);
             let model = glm::rotate(&model, angle, pos); // rotate around position to get different directions

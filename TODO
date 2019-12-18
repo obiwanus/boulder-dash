@@ -5,6 +5,8 @@ DONE:
 18.12.2019
 - Look around even if the pointer has reached the edge of the window
 - Hide the mouse cursor
+- Figured out how to get the camera direction by using trigonometry
+- Zoom by changing FOV
 
 16.12.2019
 - Walk around with camera (keep looking at the origin)
