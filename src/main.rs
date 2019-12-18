@@ -16,6 +16,10 @@ extern crate failure;
 mod shader;
 use shader::Program;
 
+mod camera;
+use camera::Camera;
+use camera::Movement::*;
+
 fn main() {
     if let Err(error) = run() {
         eprintln!("{}", error_into_string(error));
@@ -204,12 +208,6 @@ fn run() -> Result<(), failure::Error> {
         gl::GenerateMipmap(gl::TEXTURE_2D);
     }
 
-    // Camera
-    let camera_up = glm::vec3(0.0, 1.0, 0.0);
-    let mut camera_pos = glm::vec3(0.0, 0.0, 10.0);
-    let mut camera_pitch = 0.0;
-    let mut camera_yaw = 0.0;
-
     let triangle_program = Program::new()
         .vertex_shader("assets/shaders/triangle/triangle.vert")?
         .fragment_shader("assets/shaders/triangle/triangle.frag")?
@@ -230,7 +228,6 @@ fn run() -> Result<(), failure::Error> {
     }
 
     let model = glm::rotation(-0.25 * pi, &glm::vec3(0.0, 0.0, 1.0));
-    let mut fov = 0.5 * pi;
 
     let cube_positions = vec![
         glm::vec3(0.0, 0.0, 0.0),
@@ -245,6 +242,10 @@ fn run() -> Result<(), failure::Error> {
         glm::vec3(-1.3, 1.0, -1.5),
     ];
 
+    let mut camera = Camera::new()
+        .set_position(glm::vec3(0.0, 0.0, 10.0))
+        .set_aspect_ratio(SCREEN_WIDTH / SCREEN_HEIGHT);
+
     let start_timestamp = SystemTime::now();
     let mut frame_start = SystemTime::now();
 
@@ -257,71 +258,33 @@ fn run() -> Result<(), failure::Error> {
         for event in event_pump.poll_iter() {
             match event {
                 sdl2::event::Event::Quit { .. } => break 'main,
-                sdl2::event::Event::MouseWheel { y, .. } => {
-                    let min_fov = 0.01 * pi;
-                    let max_fov = 0.5 * pi;
-                    if fov >= min_fov && fov <= max_fov {
-                        fov -= 0.02 * (y as f32);
-                    }
-                    if fov < min_fov {
-                        fov = min_fov;
-                    }
-                    if fov > max_fov {
-                        fov = max_fov;
-                    }
-                }
+                sdl2::event::Event::MouseWheel { y, .. } => camera.adjust_zoom(y),
                 _ => {}
             }
         }
 
         // Look around
         let mouse_state = event_pump.relative_mouse_state();
-        let sensitivity = 0.005;
-        {
-            camera_pitch += -mouse_state.y() as f32 * sensitivity;
-            let max_pitch = 0.49 * pi;
-            let min_pitch = -max_pitch;
-            if camera_pitch > max_pitch {
-                camera_pitch = max_pitch;
-            }
-            if camera_pitch < min_pitch {
-                camera_pitch = min_pitch;
-            }
-        }
-        camera_yaw += mouse_state.x() as f32 * sensitivity;
+        camera.rotate(mouse_state.x(), mouse_state.y());
 
-        let camera_direction = glm::normalize(&glm::vec3(
-            camera_pitch.cos() * camera_yaw.cos(),
-            camera_pitch.sin(),
-            camera_pitch.cos() * camera_yaw.sin(),
-        ));
-
-        // Move around
-        let camera_speed = 10.0 * delta_time;
+        // Move camera
         let keyboard = event_pump.keyboard_state();
         if keyboard.is_scancode_pressed(Scancode::W) {
-            camera_pos += camera_speed * camera_direction;
+            camera.go(Forward, delta_time);
         }
         if keyboard.is_scancode_pressed(Scancode::S) {
-            camera_pos -= camera_speed * camera_direction;
+            camera.go(Backward, delta_time);
         }
         if keyboard.is_scancode_pressed(Scancode::A) {
-            let right = glm::normalize(&glm::cross(&camera_direction, &camera_up));
-            camera_pos -= right * camera_speed;
+            camera.go(Left, delta_time);
         }
         if keyboard.is_scancode_pressed(Scancode::D) {
-            let right = glm::normalize(&glm::cross(&camera_direction, &camera_up));
-            camera_pos += right * camera_speed;
+            camera.go(Right, delta_time);
         }
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
-
-        let seconds_elapsed = SystemTime::now()
-            .duration_since(start_timestamp)
-            .unwrap()
-            .as_secs_f32();
 
         unsafe {
             gl::BindVertexArray(vao_triangle);
@@ -329,14 +292,17 @@ fn run() -> Result<(), failure::Error> {
         }
 
         // Transformations
-
-        let proj = glm::perspective(SCREEN_WIDTH / SCREEN_HEIGHT, fov, 0.1, 100.0);
-        let view = glm::look_at(&camera_pos, &(camera_pos + camera_direction), &camera_up);
+        let proj = camera.get_projection_matrix();
+        let view = camera.get_view_matrix();
         unsafe {
             gl::UniformMatrix4fv(vertex_proj, 1, gl::FALSE, proj.as_ptr());
             gl::UniformMatrix4fv(vertex_view, 1, gl::FALSE, view.as_ptr());
         }
 
+        let seconds_elapsed = SystemTime::now()
+            .duration_since(start_timestamp)
+            .unwrap()
+            .as_secs_f32();
         let angle = seconds_elapsed * pi / 5.0;
         for pos in cube_positions.iter() {
             let model = glm::translate(&model, pos);
@@ -346,6 +312,7 @@ fn run() -> Result<(), failure::Error> {
                 gl::DrawElements(gl::TRIANGLES, 36, gl::UNSIGNED_INT, std::ptr::null());
             }
         }
+        println!("fov: {}", camera.fov());
 
         // // Rendering time
         // let render_ms = SystemTime::now()
