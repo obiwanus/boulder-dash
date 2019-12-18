@@ -347,6 +347,14 @@ fn run() -> Result<(), failure::Error> {
             }
         }
 
+        // // Rendering time
+        // let render_ms = SystemTime::now()
+        //     .duration_since(frame_start)
+        //     .unwrap()
+        //     .as_micros() as f32
+        //     / 1000.0;
+        // println!("rendering time: {} ms", render_ms);
+
         window.gl_swap_window();
     }
 
