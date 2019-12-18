@@ -1,8 +1,10 @@
 - Redesign the camera code so it's nicer
-- Hide the mouse cursor
-- Look around even if the pointer has reached the edge of the window
 
 DONE:
+
+18.12.2019
+- Look around even if the pointer has reached the edge of the window
+- Hide the mouse cursor
 
 16.12.2019
 - Walk around with camera (keep looking at the origin)

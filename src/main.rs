@@ -49,6 +49,7 @@ fn run() -> Result<(), failure::Error> {
         "Swap interval: {:?}",
         video_subsystem.gl_get_swap_interval()
     );
+    sdl.mouse().set_relative_mouse_mode(true);
 
     unsafe {
         gl::Viewport(0, 0, 1024, 768);
@@ -204,7 +205,6 @@ fn run() -> Result<(), failure::Error> {
     // Camera
     let camera_up = glm::vec3(0.0, 1.0, 0.0);
     let mut camera_pos = glm::vec3(0.0, 0.0, 10.0);
-    // let mut camera_direction = glm::normalize(&(glm::vec3(0.0, 0.0, 0.0) - camera_pos));
     let mut camera_pitch = 0.0;
     let mut camera_yaw = 0.0;
 
@@ -269,7 +269,7 @@ fn run() -> Result<(), failure::Error> {
 
         // Look around
         let mouse_state = event_pump.relative_mouse_state();
-        let sensitivity = 0.002;
+        let sensitivity = 0.005;
         {
             camera_pitch += -mouse_state.y() as f32 * sensitivity;
             let max_pitch = 0.49 * glm::pi::<f32>();
