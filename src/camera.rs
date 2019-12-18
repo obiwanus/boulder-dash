@@ -56,7 +56,7 @@ impl Camera {
     }
 
     // TODO:
-    // Sets direction and Euler angles accordingly
+    // Sets direction, right and Euler angles accordingly
     // pub fn look_at(self, target: Vec3) -> Self {
     //     let new_direction = glm::normalize(&(target - self.position));
     //     glm::rotation(angle: N, v: &TVec3<N>)

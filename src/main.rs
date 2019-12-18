@@ -1,4 +1,5 @@
 use gl::types::*;
+use std::f32::consts::PI;
 use std::time::SystemTime;
 
 extern crate gl;
@@ -39,8 +40,6 @@ fn run() -> Result<(), failure::Error> {
 
     const SCREEN_WIDTH: f32 = 1024.0;
     const SCREEN_HEIGHT: f32 = 768.0;
-
-    let pi: f32 = glm::pi();
 
     let window = video_subsystem
         .window("Boulder Dash", SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32)
@@ -227,7 +226,7 @@ fn run() -> Result<(), failure::Error> {
         gl::Uniform1i(texture1_location, 1);
     }
 
-    let model = glm::rotation(-0.25 * pi, &glm::vec3(0.0, 0.0, 1.0));
+    let model = glm::rotation(-0.25 * PI, &glm::vec3(0.0, 0.0, 1.0));
 
     let cube_positions = vec![
         glm::vec3(0.0, 0.0, 0.0),
@@ -303,7 +302,7 @@ fn run() -> Result<(), failure::Error> {
             .duration_since(start_timestamp)
             .unwrap()
             .as_secs_f32();
-        let angle = seconds_elapsed * pi / 5.0;
+        let angle = seconds_elapsed * PI / 5.0;
         for pos in cube_positions.iter() {
             let model = glm::translate(&model, pos);
             let model = glm::rotate(&model, angle, pos); // rotate around position to get different directions
@@ -312,7 +311,6 @@ fn run() -> Result<(), failure::Error> {
                 gl::DrawElements(gl::TRIANGLES, 36, gl::UNSIGNED_INT, std::ptr::null());
             }
         }
-        println!("fov: {}", camera.fov());
 
         // // Rendering time
         // let render_ms = SystemTime::now()
