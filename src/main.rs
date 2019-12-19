@@ -1,4 +1,3 @@
-use gl::types::*;
 use std::f32::consts::PI;
 use std::time::SystemTime;
 
@@ -17,6 +16,9 @@ use shader::Program;
 
 mod texture;
 use texture::Texture;
+
+mod buffers;
+use buffers::{VertexArray, VertexBuffer};
 
 mod camera;
 use camera::Camera;
@@ -108,75 +110,16 @@ fn run() -> Result<(), failure::Error> {
        -0.5, -0.5, -0.5,   -0.5, -0.5,      // 6
        -0.5, -0.5, 0.5,    -0.5, 0.5,       // 2
     ];
-    // #[rustfmt::skip]
-    // let indices: Vec<u32> = vec![
-    //     0, 1, 3, // Front
-    //     1, 2, 3,
-    //     7, 4, 6, // Back
-    //     6, 5, 4,
-    //     4, 5, 0, // Right
-    //     5, 1, 0,
-    //     3, 2, 7, // Left
-    //     2, 6, 7,
-    //     4, 0, 7, // Top
-    //     0, 3, 7,
-    //     1, 5, 2, // Bottom
-    //     5, 6, 2,
-    // ];
 
-    let mut vbo_cube: GLuint = 0;
-    let mut vao_cube: GLuint = 0;
-    unsafe {
-        gl::GenBuffers(1, &mut vbo_cube);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo_cube);
-        gl::GenVertexArrays(1, &mut vao_cube);
-        gl::BindVertexArray(vao_cube);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,
-            (vertices.len() * std::mem::size_of::<f32>()) as isize,
-            vertices.as_ptr() as *const GLvoid,
-            gl::STATIC_DRAW,
-        );
-        // Positions
-        gl::VertexAttribPointer(
-            0,
-            3,
-            gl::FLOAT,
-            gl::FALSE,
-            5 * std::mem::size_of::<f32>() as i32,
-            std::ptr::null(),
-        );
-        gl::EnableVertexAttribArray(0);
-        // Texture coordinates
-        gl::VertexAttribPointer(
-            1,
-            2,
-            gl::FLOAT,
-            gl::FALSE,
-            5 * std::mem::size_of::<f32>() as i32,
-            (3 * std::mem::size_of::<f32>()) as *const GLvoid,
-        );
-        gl::EnableVertexAttribArray(1);
+    let cube = VertexBuffer::new().set_static_data(&vertices);
+    cube.bind();
+    let cube_vao = VertexArray::new()
+        .set_attrib(0, 3, 5, 0) // Positions
+        .set_attrib(1, 2, 5, 3); // Texture coords
+    cube_vao.unbind();
 
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
-        gl::BindVertexArray(0);
-    }
-
-    let mut vao_light: GLuint = 0;
-    unsafe {
-        gl::GenVertexArrays(1, &mut vao_light);
-        gl::BindVertexArray(vao_light);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vao_cube); // use the same buffer, since we're building a light cube
-        gl::VertexAttribPointer(
-            0,
-            3,
-            gl::FLOAT,
-            gl::FALSE,
-            5 * std::mem::size_of::<f32>() as i32,
-            std::ptr::null(),
-        );
-        gl::EnableVertexAttribArray(0);
-    }
+    let light_vao = VertexArray::new().set_attrib(0, 3, 5, 0);
+    cube.unbind();
 
     let wall_texture = Texture::new()
         .set_default_parameters()
@@ -288,20 +231,14 @@ fn run() -> Result<(), failure::Error> {
             let cube_model = glm::rotate(&cube_model, angle, pos); // rotate around position to get different directions
             cube_shader.set_mat4("model", &cube_model)?;
 
-            unsafe {
-                gl::BindVertexArray(vao_cube);
-                gl::DrawArrays(gl::TRIANGLES, 0, 36);
-            }
+            cube.draw_triangles(&cube_vao);
         }
 
         // Draw light cube
         light_shader.set_used();
         light_shader.set_mat4("proj", &proj)?;
         light_shader.set_mat4("view", &view)?;
-        unsafe {
-            gl::BindVertexArray(vao_light);
-            gl::DrawArrays(gl::TRIANGLES, 0, 36);
-        }
+        cube.draw_triangles(&light_vao);
 
         // // Rendering time
         // let render_ms = SystemTime::now()

@@ -1,4 +1,3 @@
-- Create a buffers module
 - Shade the cubes
 
 DONE:
@@ -9,6 +8,7 @@ DONE:
 - Shed some light on the scene
 - Draw light source
 - Set uniforms in a safer way (but a bit more expensive)
+- Create a buffers module
 
 18.12.2019
 - Look around even if the pointer has reached the edge of the window
