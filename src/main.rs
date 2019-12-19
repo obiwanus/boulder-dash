@@ -162,6 +162,8 @@ fn run() -> Result<(), failure::Error> {
         gl::BindVertexArray(0);
     }
 
+    // let mut vao
+
     let wall_texture = Texture::new()
         .set_default_parameters()
         .load_image("assets/textures/wall.jpg")?;
@@ -174,19 +176,13 @@ fn run() -> Result<(), failure::Error> {
         .fragment_shader("assets/shaders/triangle/triangle.frag")?
         .link()?;
     triangle_program.set_used();
+    triangle_program.set_texture_uniform("wall", 0);
+    triangle_program.set_texture_uniform("face", 1);
 
     // Uniforms
     let vertex_proj = triangle_program.get_uniform_location("proj");
     let vertex_view = triangle_program.get_uniform_location("view");
     let vertex_model = triangle_program.get_uniform_location("model");
-
-    let texture0_location = triangle_program.get_uniform_location("texture0");
-    let texture1_location = triangle_program.get_uniform_location("texture1");
-
-    unsafe {
-        gl::Uniform1i(texture0_location, 0);
-        gl::Uniform1i(texture1_location, 1);
-    }
 
     let model = glm::rotation(-0.25 * PI, &glm::vec3(0.0, 0.0, 1.0));
 

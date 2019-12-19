@@ -97,6 +97,14 @@ impl Program {
             )
         }
     }
+
+    /// Assigns a name from the shader to a texture unit
+    pub fn set_texture_uniform(&self, name: &str, unit: i32) {
+        let location = self.get_uniform_location(name);
+        unsafe {
+            gl::Uniform1i(location, unit);
+        }
+    }
 }
 
 impl Drop for Program {
