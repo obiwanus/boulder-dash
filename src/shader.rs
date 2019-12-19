@@ -1,6 +1,7 @@
 use failure::Fail;
 use gl;
 use gl::types::*;
+use glm::{Mat4, Vec3};
 use std::ffi::CString;
 use std::fs;
 use std::io;
@@ -17,7 +18,11 @@ pub enum ShaderError {
     CompileError { name: String, message: String },
     #[fail(display = "Failed to link program: ")]
     LinkError(String),
+    #[fail(display = "Couldn't get uniform location for '{}'", name)]
+    UniformLocationNotFound { name: String },
 }
+
+pub type Result<T> = std::result::Result<T, ShaderError>;
 
 pub struct Program {
     id: GLuint,
@@ -35,7 +40,7 @@ impl Program {
         }
     }
 
-    pub fn vertex_shader(mut self, path: &str) -> Result<Self, ShaderError> {
+    pub fn vertex_shader(mut self, path: &str) -> Result<Self> {
         let shader = Shader::new(gl::VERTEX_SHADER, path)?;
         unsafe {
             gl::AttachShader(self.id, shader.id());
@@ -45,7 +50,7 @@ impl Program {
         Ok(self)
     }
 
-    pub fn fragment_shader(mut self, path: &str) -> Result<Self, ShaderError> {
+    pub fn fragment_shader(mut self, path: &str) -> Result<Self> {
         let shader = Shader::new(gl::FRAGMENT_SHADER, path)?;
         unsafe {
             gl::AttachShader(self.id, shader.id());
@@ -55,7 +60,7 @@ impl Program {
         Ok(self)
     }
 
-    pub fn link(self) -> Result<Self, ShaderError> {
+    pub fn link(self) -> Result<Self> {
         unsafe {
             gl::LinkProgram(self.id);
         }
@@ -89,21 +94,46 @@ impl Program {
         }
     }
 
-    pub fn get_uniform_location(&self, name: &str) -> GLint {
-        unsafe {
+    pub fn get_uniform_location(&self, name: &str) -> Result<GLint> {
+        let location = unsafe {
             gl::GetUniformLocation(
                 self.id,
                 CString::new(name).unwrap().as_ptr() as *const GLchar,
             )
+        };
+        if location < 0 {
+            return Err(ShaderError::UniformLocationNotFound {
+                name: name.to_owned(),
+            });
         }
+        Ok(location)
     }
 
     /// Assigns a name from the shader to a texture unit
-    pub fn set_texture_uniform(&self, name: &str, unit: i32) {
-        let location = self.get_uniform_location(name);
+    pub fn set_texture_unit(&self, name: &str, unit: i32) -> Result<()> {
+        let location = self.get_uniform_location(name)?;
         unsafe {
             gl::Uniform1i(location, unit);
         }
+        Ok(())
+    }
+
+    /// Sets a vec3 uniform
+    pub fn set_vec3(&self, name: &str, vec: Vec3) -> Result<()> {
+        let location = self.get_uniform_location(name)?;
+        unsafe {
+            gl::Uniform3fv(location, 1, vec.as_ptr());
+        }
+        Ok(())
+    }
+
+    /// Sets a vec3 uniform
+    pub fn set_mat4(&self, name: &str, mat: &Mat4) -> Result<()> {
+        let location = self.get_uniform_location(name)?;
+        unsafe {
+            gl::UniformMatrix4fv(location, 1, gl::FALSE, mat.as_ptr());
+        }
+        Ok(())
     }
 }
 
@@ -120,7 +150,7 @@ struct Shader {
 }
 
 impl Shader {
-    pub fn new(kind: GLenum, path: &str) -> Result<Self, ShaderError> {
+    pub fn new(kind: GLenum, path: &str) -> Result<Self> {
         let source = fs::read_to_string(path).map_err(|e| ShaderError::IoError {
             name: path.to_owned(),
             inner: e,

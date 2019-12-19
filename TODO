@@ -1,10 +1,14 @@
-- Shed some light on the scene
+- Create a buffers module
+- Shade the cubes
 
 DONE:
 
 19.12.2019
 - Properly texture every side of the cube
 - Factor textures out into a module
+- Shed some light on the scene
+- Draw light source
+- Set uniforms in a safer way (but a bit more expensive)
 
 18.12.2019
 - Look around even if the pointer has reached the edge of the window

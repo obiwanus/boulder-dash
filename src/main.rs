@@ -59,7 +59,7 @@ fn run() -> Result<(), failure::Error> {
 
     unsafe {
         gl::Viewport(0, 0, 1024, 768);
-        gl::ClearColor(0.3, 0.3, 0.5, 1.0);
+        gl::ClearColor(0.1, 0.1, 0.1, 1.0);
         gl::Enable(gl::DEPTH_TEST);
     }
 
@@ -124,13 +124,13 @@ fn run() -> Result<(), failure::Error> {
     //     5, 6, 2,
     // ];
 
-    let mut vbo_triangle: GLuint = 0;
-    let mut vao_triangle: GLuint = 0;
+    let mut vbo_cube: GLuint = 0;
+    let mut vao_cube: GLuint = 0;
     unsafe {
-        gl::GenBuffers(1, &mut vbo_triangle);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo_triangle);
-        gl::GenVertexArrays(1, &mut vao_triangle);
-        gl::BindVertexArray(vao_triangle);
+        gl::GenBuffers(1, &mut vbo_cube);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vbo_cube);
+        gl::GenVertexArrays(1, &mut vao_cube);
+        gl::BindVertexArray(vao_cube);
         gl::BufferData(
             gl::ARRAY_BUFFER,
             (vertices.len() * std::mem::size_of::<f32>()) as isize,
@@ -162,7 +162,21 @@ fn run() -> Result<(), failure::Error> {
         gl::BindVertexArray(0);
     }
 
-    // let mut vao
+    let mut vao_light: GLuint = 0;
+    unsafe {
+        gl::GenVertexArrays(1, &mut vao_light);
+        gl::BindVertexArray(vao_light);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vao_cube); // use the same buffer, since we're building a light cube
+        gl::VertexAttribPointer(
+            0,
+            3,
+            gl::FLOAT,
+            gl::FALSE,
+            5 * std::mem::size_of::<f32>() as i32,
+            std::ptr::null(),
+        );
+        gl::EnableVertexAttribArray(0);
+    }
 
     let wall_texture = Texture::new()
         .set_default_parameters()
@@ -171,20 +185,23 @@ fn run() -> Result<(), failure::Error> {
         .set_default_parameters()
         .load_image("assets/textures/awesomeface.png")?;
 
-    let triangle_program = Program::new()
-        .vertex_shader("assets/shaders/triangle/triangle.vert")?
-        .fragment_shader("assets/shaders/triangle/triangle.frag")?
+    // Cube shader
+    let cube_shader = Program::new()
+        .vertex_shader("assets/shaders/cube/cube.vert")?
+        .fragment_shader("assets/shaders/cube/cube.frag")?
         .link()?;
-    triangle_program.set_used();
-    triangle_program.set_texture_uniform("wall", 0);
-    triangle_program.set_texture_uniform("face", 1);
+    cube_shader.set_used();
+    cube_shader.set_texture_unit("wall", 0)?;
+    cube_shader.set_texture_unit("face", 1)?;
+    cube_shader.set_vec3("light_color", glm::vec3(1.0, 1.0, 1.0))?;
 
-    // Uniforms
-    let vertex_proj = triangle_program.get_uniform_location("proj");
-    let vertex_view = triangle_program.get_uniform_location("view");
-    let vertex_model = triangle_program.get_uniform_location("model");
+    // Light shader
+    let light_shader = Program::new()
+        .vertex_shader("assets/shaders/light/light.vert")?
+        .fragment_shader("assets/shaders/light/light.frag")?
+        .link()?;
 
-    let model = glm::rotation(-0.25 * PI, &glm::vec3(0.0, 0.0, 1.0));
+    let cube_model = glm::rotation(-0.25 * PI, &glm::vec3(0.0, 0.0, 1.0));
 
     let cube_positions = vec![
         glm::vec3(0.0, 0.0, 0.0),
@@ -199,8 +216,14 @@ fn run() -> Result<(), failure::Error> {
         glm::vec3(-1.3, 1.0, -1.5),
     ];
 
+    let light_position = glm::vec3(1.2, 1.0, 2.0);
+    let light_model = glm::translation(&light_position);
+    let light_model = glm::scale(&light_model, &glm::vec3(0.2, 0.2, 0.2));
+    light_shader.set_used();
+    light_shader.set_mat4("model", &light_model)?;
+
     let mut camera = Camera::new()
-        .set_position(glm::vec3(0.0, 0.0, 10.0))
+        .set_position(glm::vec3(0.0, 0.0, 5.0))
         .set_aspect_ratio(SCREEN_WIDTH / SCREEN_HEIGHT)
         .look_at(glm::vec3(0.0, 0.0, 0.0));
 
@@ -242,18 +265,17 @@ fn run() -> Result<(), failure::Error> {
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-            gl::BindVertexArray(vao_triangle);
         }
 
         // Transformations
         let proj = camera.get_projection_matrix();
         let view = camera.get_view_matrix();
-        unsafe {
-            gl::UniformMatrix4fv(vertex_proj, 1, gl::FALSE, proj.as_ptr());
-            gl::UniformMatrix4fv(vertex_view, 1, gl::FALSE, view.as_ptr());
-        }
 
         // Draw rotating cubes
+        cube_shader.set_used();
+        cube_shader.set_mat4("proj", &proj)?;
+        cube_shader.set_mat4("view", &view)?;
+
         wall_texture.bind(0);
         face_texture.bind(1);
         let seconds_elapsed = SystemTime::now()
@@ -262,12 +284,23 @@ fn run() -> Result<(), failure::Error> {
             .as_secs_f32();
         let angle = seconds_elapsed * PI / 5.0;
         for pos in cube_positions.iter() {
-            let model = glm::translate(&model, pos);
-            let model = glm::rotate(&model, angle, pos); // rotate around position to get different directions
+            let cube_model = glm::translate(&cube_model, pos);
+            let cube_model = glm::rotate(&cube_model, angle, pos); // rotate around position to get different directions
+            cube_shader.set_mat4("model", &cube_model)?;
+
             unsafe {
-                gl::UniformMatrix4fv(vertex_model, 1, gl::FALSE, model.as_ptr());
+                gl::BindVertexArray(vao_cube);
                 gl::DrawArrays(gl::TRIANGLES, 0, 36);
             }
+        }
+
+        // Draw light cube
+        light_shader.set_used();
+        light_shader.set_mat4("proj", &proj)?;
+        light_shader.set_mat4("view", &view)?;
+        unsafe {
+            gl::BindVertexArray(vao_light);
+            gl::DrawArrays(gl::TRIANGLES, 0, 36);
         }
 
         // // Rendering time
