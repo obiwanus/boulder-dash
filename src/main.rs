@@ -67,33 +67,64 @@ fn run() -> Result<(), failure::Error> {
         // positions        // tex coords
         0.5, 0.5, 0.5,      0.5, 0.5,       // 0
         0.5, -0.5, 0.5,     0.5, -0.5,      // 1
+       -0.5, 0.5, 0.5,     -0.5, 0.5,       // 3
+        0.5, -0.5, 0.5,     0.5, -0.5,      // 1
        -0.5, -0.5, 0.5,    -0.5, -0.5,      // 2
        -0.5, 0.5, 0.5,     -0.5, 0.5,       // 3
 
+       -0.5, 0.5, -0.5,     0.5, 0.5,       // 7
+        0.5, 0.5, -0.5,     0.5, -0.5,      // 4
+       -0.5, -0.5, -0.5,   -0.5, 0.5,       // 6
+       -0.5, -0.5, -0.5,    0.5, -0.5,      // 6
+        0.5, -0.5, -0.5,   -0.5, -0.5,      // 5
+        0.5, 0.5, -0.5,    -0.5, 0.5,       // 4
+
         0.5, 0.5, -0.5,     0.5, 0.5,       // 4
         0.5, -0.5, -0.5,    0.5, -0.5,      // 5
+        0.5, 0.5, 0.5,     -0.5, 0.5,       // 0
+        0.5, -0.5, -0.5,    0.5, -0.5,      // 5
+        0.5, -0.5, 0.5,    -0.5, -0.5,      // 1
+        0.5, 0.5, 0.5,     -0.5, 0.5,       // 0
+
+       -0.5, 0.5, 0.5,      0.5, 0.5,       // 3
+       -0.5, -0.5, 0.5,     0.5, -0.5,      // 2
+       -0.5, 0.5, -0.5,    -0.5, 0.5,       // 7
+       -0.5, -0.5, 0.5,     0.5, -0.5,      // 2
        -0.5, -0.5, -0.5,   -0.5, -0.5,      // 6
        -0.5, 0.5, -0.5,    -0.5, 0.5,       // 7
+
+        0.5, 0.5, -0.5,     0.5, 0.5,       // 4
+        0.5, 0.5, 0.5,      0.5, -0.5,      // 0
+       -0.5, 0.5, -0.5,    -0.5, 0.5,       // 7
+        0.5, 0.5, 0.5,      0.5, -0.5,      // 0
+       -0.5, 0.5, 0.5,     -0.5, -0.5,      // 3
+       -0.5, 0.5, -0.5,    -0.5, 0.5,       // 7
+
+        0.5, -0.5, 0.5,     0.5, 0.5,       // 1
+        0.5, -0.5, -0.5,    0.5, -0.5,      // 5
+       -0.5, -0.5, 0.5,    -0.5, 0.5,       // 2
+        0.5, -0.5, -0.5,    0.5, -0.5,      // 5
+       -0.5, -0.5, -0.5,   -0.5, -0.5,      // 6
+       -0.5, -0.5, 0.5,    -0.5, 0.5,       // 2
     ];
-    #[rustfmt::skip]
-    let indices: Vec<u32> = vec![
-        0, 1, 3, // Front
-        1, 2, 3,
-        7, 4, 6, // Back
-        6, 5, 4,
-        4, 5, 0, // Right
-        5, 1, 0,
-        3, 2, 7, // Left
-        2, 6, 7,
-        4, 0, 7, // Top
-        0, 3, 7,
-        1, 5, 2, // Bottom
-        5, 6, 2,
-    ];
+    // #[rustfmt::skip]
+    // let indices: Vec<u32> = vec![
+    //     0, 1, 3, // Front
+    //     1, 2, 3,
+    //     7, 4, 6, // Back
+    //     6, 5, 4,
+    //     4, 5, 0, // Right
+    //     5, 1, 0,
+    //     3, 2, 7, // Left
+    //     2, 6, 7,
+    //     4, 0, 7, // Top
+    //     0, 3, 7,
+    //     1, 5, 2, // Bottom
+    //     5, 6, 2,
+    // ];
 
     let mut vbo_triangle: GLuint = 0;
     let mut vao_triangle: GLuint = 0;
-    let mut ebo_triangle: GLuint = 0;
     unsafe {
         gl::GenBuffers(1, &mut vbo_triangle);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo_triangle);
@@ -125,17 +156,6 @@ fn run() -> Result<(), failure::Error> {
             (3 * std::mem::size_of::<f32>()) as *const GLvoid,
         );
         gl::EnableVertexAttribArray(1);
-
-        // Element buffer
-        gl::GenBuffers(1, &mut ebo_triangle);
-        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
-        gl::BufferData(
-            gl::ELEMENT_ARRAY_BUFFER,
-            (indices.len() * std::mem::size_of::<u32>()) as isize,
-            indices.as_ptr() as *const GLvoid,
-            gl::STATIC_DRAW,
-        );
-        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
 
         gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind
         gl::BindVertexArray(0);
@@ -284,11 +304,7 @@ fn run() -> Result<(), failure::Error> {
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-        }
-
-        unsafe {
             gl::BindVertexArray(vao_triangle);
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo_triangle);
         }
 
         // Transformations
@@ -309,7 +325,7 @@ fn run() -> Result<(), failure::Error> {
             let model = glm::rotate(&model, angle, pos); // rotate around position to get different directions
             unsafe {
                 gl::UniformMatrix4fv(vertex_model, 1, gl::FALSE, model.as_ptr());
-                gl::DrawElements(gl::TRIANGLES, 36, gl::UNSIGNED_INT, std::ptr::null());
+                gl::DrawArrays(gl::TRIANGLES, 0, 36);
             }
         }
 

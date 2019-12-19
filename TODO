@@ -1,7 +1,9 @@
-- Try creating a view matrix without using glm::look_at
-- Move on to the lighting tutorial
+- Shed some light on the scene
 
 DONE:
+
+19.12.2019
+- Properly texture every side of the cube
 
 18.12.2019
 - Look around even if the pointer has reached the edge of the window
