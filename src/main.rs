@@ -9,13 +9,14 @@ extern crate stb_image;
 
 use sdl2::keyboard::Scancode;
 
-use stb_image::image::{self, LoadResult};
-
 #[macro_use]
 extern crate failure;
 
 mod shader;
 use shader::Program;
+
+mod texture;
+use texture::Texture;
 
 mod camera;
 use camera::Camera;
@@ -161,71 +162,12 @@ fn run() -> Result<(), failure::Error> {
         gl::BindVertexArray(0);
     }
 
-    unsafe {
-        stb_image::stb_image::bindgen::stbi_set_flip_vertically_on_load(1);
-    }
-
-    // Load texture 0
-    let texture0 = match image::load_with_depth("assets/textures/wall.jpg", 3, false) {
-        LoadResult::ImageU8(image) => image,
-        LoadResult::ImageF32(_) => panic!("Image format F32 is not supported"),
-        LoadResult::Error(msg) => panic!("Couldn't load texture: {}", msg),
-    };
-
-    let mut texture0_id: GLuint = 0;
-    unsafe {
-        gl::GenTextures(1, &mut texture0_id);
-        gl::ActiveTexture(gl::TEXTURE0);
-        gl::BindTexture(gl::TEXTURE_2D, texture0_id);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
-        gl::TexImage2D(
-            gl::TEXTURE_2D,
-            0,
-            gl::RGB as GLint,
-            texture0.width as GLint,
-            texture0.height as GLint,
-            0,
-            gl::RGB,
-            gl::UNSIGNED_BYTE,
-            texture0.data.as_ptr() as *const std::ffi::c_void,
-        );
-
-        gl::GenerateMipmap(gl::TEXTURE_2D);
-    }
-
-    // Load texture 2
-    let texture1 = match image::load_with_depth("assets/textures/awesomeface.png", 3, false) {
-        LoadResult::ImageU8(image) => image,
-        LoadResult::ImageF32(_) => panic!("Image format F32 is not supported"),
-        LoadResult::Error(msg) => panic!("Couldn't load texture: {}", msg),
-    };
-
-    let mut texture1_id: GLuint = 0;
-    unsafe {
-        gl::GenTextures(1, &mut texture1_id);
-        gl::ActiveTexture(gl::TEXTURE1);
-        gl::BindTexture(gl::TEXTURE_2D, texture1_id);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as GLint);
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as GLint);
-        gl::TexImage2D(
-            gl::TEXTURE_2D,
-            0,
-            gl::RGB as GLint,
-            texture1.width as GLint,
-            texture1.height as GLint,
-            0,
-            gl::RGB,
-            gl::UNSIGNED_BYTE,
-            texture1.data.as_ptr() as *const std::ffi::c_void,
-        );
-
-        gl::GenerateMipmap(gl::TEXTURE_2D);
-    }
+    let wall_texture = Texture::new()
+        .set_default_parameters()
+        .load_image("assets/textures/wall.jpg")?;
+    let face_texture = Texture::new()
+        .set_default_parameters()
+        .load_image("assets/textures/awesomeface.png")?;
 
     let triangle_program = Program::new()
         .vertex_shader("assets/shaders/triangle/triangle.vert")?
@@ -315,6 +257,9 @@ fn run() -> Result<(), failure::Error> {
             gl::UniformMatrix4fv(vertex_view, 1, gl::FALSE, view.as_ptr());
         }
 
+        // Draw rotating cubes
+        wall_texture.bind(0);
+        face_texture.bind(1);
         let seconds_elapsed = SystemTime::now()
             .duration_since(start_timestamp)
             .unwrap()

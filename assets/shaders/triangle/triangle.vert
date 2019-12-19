@@ -12,7 +12,6 @@ out VS_OUTPUT {
 } OUT;
 
 void main() {
-    gl_Position = vec4(Position.x, Position.y, Position.z, 1.0);
-    gl_Position = proj * view * model * gl_Position;
+    gl_Position = proj * view * model * vec4(Position, 1.0);
     OUT.TexCoord = TexCoord;
 }

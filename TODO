@@ -4,6 +4,7 @@ DONE:
 
 19.12.2019
 - Properly texture every side of the cube
+- Factor textures out into a module
 
 18.12.2019
 - Look around even if the pointer has reached the edge of the window
