@@ -238,8 +238,11 @@ fn run() -> Result<(), failure::Error> {
         cube_shader.set_used();
         cube_shader.set_mat4("proj", &proj)?;
         cube_shader.set_mat4("view", &view)?;
-        cube_shader.set_vec3("camera_pos", camera.position)?;
-        cube_shader.set_vec3("light_pos", light_position)?;
+        // Put light into the view space
+        let light_pos = glm::vec4_to_vec3(
+            &(view * glm::vec4(light_position.x, light_position.y, light_position.z, 1.0)),
+        );
+        cube_shader.set_vec3("light_pos", light_pos)?;
 
         wall_texture.bind(0);
         face_texture.bind(1);

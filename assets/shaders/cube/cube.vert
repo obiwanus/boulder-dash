@@ -17,6 +17,6 @@ out VS_OUTPUT {
 void main() {
     gl_Position = proj * view * model * vec4(Position, 1.0);
     OUT.tex_coord = TexCoord;
-    OUT.normal = mat3(transpose(inverse(model))) * Normal;
-    OUT.frag_pos = (model * vec4(Position, 1.0)).xyz;
+    OUT.normal = mat3(transpose(inverse(view * model))) * Normal;
+    OUT.frag_pos = (view * model * vec4(Position, 1.0)).xyz;
 }
