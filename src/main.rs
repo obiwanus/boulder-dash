@@ -61,7 +61,7 @@ fn run() -> Result<(), failure::Error> {
 
     unsafe {
         gl::Viewport(0, 0, 1024, 768);
-        gl::ClearColor(0.1, 0.1, 0.1, 1.0);
+        gl::ClearColor(0.05, 0.05, 0.05, 1.0);
         gl::Enable(gl::DEPTH_TEST);
     }
 
