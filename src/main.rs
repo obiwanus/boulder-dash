@@ -41,15 +41,14 @@ fn run() -> Result<(), failure::Error> {
     gl_attr.set_depth_size(16);
     gl_attr.set_double_buffer(true);
 
-    const SCREEN_WIDTH: f32 = 1024.0;
-    const SCREEN_HEIGHT: f32 = 768.0;
-
     let window = video_subsystem
-        .window("Boulder Dash", SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32)
+        .window("Boulder Dash", 1024, 768)
         .opengl()
-        .resizable()
+        .fullscreen_desktop()
         .build()
         .unwrap();
+
+    let (window_width, window_height) = window.size();
 
     let _gl_context = window.gl_create_context().unwrap();
     gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
@@ -60,7 +59,7 @@ fn run() -> Result<(), failure::Error> {
     sdl.mouse().set_relative_mouse_mode(true);
 
     unsafe {
-        gl::Viewport(0, 0, 1024, 768);
+        gl::Viewport(0, 0, window_width as i32, window_height as i32);
         gl::ClearColor(0.05, 0.05, 0.05, 1.0);
         gl::Enable(gl::DEPTH_TEST);
     }
@@ -165,7 +164,7 @@ fn run() -> Result<(), failure::Error> {
         .link()?;
 
     let mut camera = Camera::new();
-    camera.aspect_ratio = SCREEN_WIDTH / SCREEN_HEIGHT;
+    camera.aspect_ratio = (window_width as f32) / (window_height as f32);
     camera.position = glm::vec3(0.0, 0.0, 5.0);
     camera.look_at(glm::vec3(0.0, 0.0, 0.0));
 
@@ -222,7 +221,7 @@ fn run() -> Result<(), failure::Error> {
         // Light cube
         let x_max = 2.0;
         let z_max = 5.0;
-        light_position.x = x_max * seconds_elapsed.sin();
+        light_position.x = x_max * (seconds_elapsed * 3.0).sin();
         light_position.z = z_max * seconds_elapsed.cos() - 4.0;
         let light_model = glm::translation(&light_position);
         let light_model = glm::scale(&light_model, &glm::vec3(0.1, 0.1, 0.1));
