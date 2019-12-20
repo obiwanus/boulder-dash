@@ -169,10 +169,10 @@ fn run() -> Result<(), failure::Error> {
     light_shader.set_used();
     light_shader.set_mat4("model", &light_model)?;
 
-    let mut camera = Camera::new()
-        .set_position(glm::vec3(0.0, 0.0, 5.0))
-        .set_aspect_ratio(SCREEN_WIDTH / SCREEN_HEIGHT)
-        .look_at(glm::vec3(0.0, 0.0, 0.0));
+    let mut camera = Camera::new();
+    camera.aspect_ratio = SCREEN_WIDTH / SCREEN_HEIGHT;
+    camera.position = glm::vec3(0.0, 0.0, 5.0);
+    camera.look_at(glm::vec3(0.0, 0.0, 0.0));
 
     let start_timestamp = SystemTime::now();
     let mut frame_start = SystemTime::now();
@@ -222,6 +222,7 @@ fn run() -> Result<(), failure::Error> {
         cube_shader.set_used();
         cube_shader.set_mat4("proj", &proj)?;
         cube_shader.set_mat4("view", &view)?;
+        cube_shader.set_vec3("camera_pos", camera.position)?;
 
         wall_texture.bind(0);
         face_texture.bind(1);

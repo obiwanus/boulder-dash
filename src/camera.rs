@@ -18,7 +18,7 @@ pub enum Movement {
 }
 
 pub struct Camera {
-    position: Vec3,
+    pub position: Vec3,
     direction: Vec3,
     up: Vec3,
     right: Vec3,
@@ -29,7 +29,7 @@ pub struct Camera {
     movement_speed: f32,
     sensitivity: f32,
     zoom: f32,
-    aspect_ratio: f32,
+    pub aspect_ratio: f32,
 }
 
 impl Camera {
@@ -50,26 +50,15 @@ impl Camera {
         }
     }
 
-    pub fn set_position(mut self, value: Vec3) -> Self {
-        self.position = value;
-        self
-    }
-
     /// Point the camera at the target.
     /// Sets direction, right and Euler angles accordingly
-    pub fn look_at(mut self, target: Vec3) -> Self {
+    pub fn look_at(&mut self, target: Vec3) {
         self.direction = glm::normalize(&(target - self.position));
         let (x, y, z) = (self.direction.x, self.direction.y, self.direction.z);
         self.pitch = y.asin();
         self.pitch = clamp(self.pitch, PITCH_MIN, PITCH_MAX);
         self.yaw = (z / x).atan();
         self.right = self.recalculate_right();
-        self
-    }
-
-    pub fn set_aspect_ratio(mut self, value: f32) -> Self {
-        self.aspect_ratio = value;
-        self
     }
 
     /// Move the camera

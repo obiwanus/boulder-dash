@@ -1,9 +1,10 @@
-- Specular lighting
+- Move the light around
 
 DONE:
 
 20.12.2019
 - Ambient + diffuse lighting
+- Specular lighting
 
 19.12.2019
 - Properly texture every side of the cube
