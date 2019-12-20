@@ -29,14 +29,14 @@ impl VertexBuffer {
         }
     }
 
-    pub fn set_static_data(mut self, vertices: &Vec<f32>) -> Self {
+    pub fn set_static_data(mut self, vertex_data: &Vec<f32>, stride: usize) -> Self {
         self.bind();
-        self.num_vertices = vertices.len();
+        self.num_vertices = vertex_data.len() / stride;
         unsafe {
             gl::BufferData(
                 gl::ARRAY_BUFFER,
-                (self.num_vertices * std::mem::size_of::<f32>()) as isize,
-                vertices.as_ptr() as *const GLvoid,
+                (vertex_data.len() * std::mem::size_of::<f32>()) as isize,
+                vertex_data.as_ptr() as *const GLvoid,
                 gl::STATIC_DRAW,
             );
         }
@@ -78,7 +78,7 @@ impl VertexArray {
         }
     }
 
-    pub fn set_attrib(self, location: u32, count: i32, stride: i32, offset: usize) -> Self {
+    pub fn set_attrib(self, location: u32, count: i32, stride: usize, offset: usize) -> Self {
         self.bind();
         unsafe {
             gl::VertexAttribPointer(
@@ -86,7 +86,7 @@ impl VertexArray {
                 count,
                 gl::FLOAT,
                 gl::FALSE,
-                stride * std::mem::size_of::<f32>() as i32,
+                (stride * std::mem::size_of::<f32>()) as i32,
                 (offset * std::mem::size_of::<f32>()) as *const GLvoid,
             );
             gl::EnableVertexAttribArray(location);

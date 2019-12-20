@@ -67,82 +67,49 @@ fn run() -> Result<(), failure::Error> {
 
     #[rustfmt::skip]
     let vertices: Vec<f32> = vec![
-        // positions        // tex coords
-        0.5, 0.5, 0.5,      0.5, 0.5,       // 0
-        0.5, -0.5, 0.5,     0.5, -0.5,      // 1
-       -0.5, 0.5, 0.5,     -0.5, 0.5,       // 3
-        0.5, -0.5, 0.5,     0.5, -0.5,      // 1
-       -0.5, -0.5, 0.5,    -0.5, -0.5,      // 2
-       -0.5, 0.5, 0.5,     -0.5, 0.5,       // 3
+        // positions        // tex coords   // normals
+        0.5, 0.5, 0.5,      0.5, 0.5,       0.0, 0.0, 1.0,      // 0
+        0.5, -0.5, 0.5,     0.5, -0.5,      0.0, 0.0, 1.0,      // 1
+       -0.5, 0.5, 0.5,     -0.5, 0.5,       0.0, 0.0, 1.0,      // 3
+        0.5, -0.5, 0.5,     0.5, -0.5,      0.0, 0.0, 1.0,      // 1
+       -0.5, -0.5, 0.5,    -0.5, -0.5,      0.0, 0.0, 1.0,      // 2
+       -0.5, 0.5, 0.5,     -0.5, 0.5,       0.0, 0.0, 1.0,      // 3
 
-       -0.5, 0.5, -0.5,     0.5, 0.5,       // 7
-        0.5, 0.5, -0.5,     0.5, -0.5,      // 4
-       -0.5, -0.5, -0.5,   -0.5, 0.5,       // 6
-       -0.5, -0.5, -0.5,    0.5, -0.5,      // 6
-        0.5, -0.5, -0.5,   -0.5, -0.5,      // 5
-        0.5, 0.5, -0.5,    -0.5, 0.5,       // 4
+       -0.5, 0.5, -0.5,     0.5, 0.5,       0.0, 0.0, -1.0,     // 7
+        0.5, 0.5, -0.5,     0.5, -0.5,      0.0, 0.0, -1.0,     // 4
+       -0.5, -0.5, -0.5,   -0.5, 0.5,       0.0, 0.0, -1.0,     // 6
+       -0.5, -0.5, -0.5,    0.5, -0.5,      0.0, 0.0, -1.0,     // 6
+        0.5, -0.5, -0.5,   -0.5, -0.5,      0.0, 0.0, -1.0,     // 5
+        0.5, 0.5, -0.5,    -0.5, 0.5,       0.0, 0.0, -1.0,     // 4
 
-        0.5, 0.5, -0.5,     0.5, 0.5,       // 4
-        0.5, -0.5, -0.5,    0.5, -0.5,      // 5
-        0.5, 0.5, 0.5,     -0.5, 0.5,       // 0
-        0.5, -0.5, -0.5,    0.5, -0.5,      // 5
-        0.5, -0.5, 0.5,    -0.5, -0.5,      // 1
-        0.5, 0.5, 0.5,     -0.5, 0.5,       // 0
+        0.5, 0.5, -0.5,     0.5, 0.5,       1.0, 0.0, 0.0,      // 4
+        0.5, -0.5, -0.5,    0.5, -0.5,      1.0, 0.0, 0.0,      // 5
+        0.5, 0.5, 0.5,     -0.5, 0.5,       1.0, 0.0, 0.0,      // 0
+        0.5, -0.5, -0.5,    0.5, -0.5,      1.0, 0.0, 0.0,      // 5
+        0.5, -0.5, 0.5,    -0.5, -0.5,      1.0, 0.0, 0.0,      // 1
+        0.5, 0.5, 0.5,     -0.5, 0.5,       1.0, 0.0, 0.0,      // 0
 
-       -0.5, 0.5, 0.5,      0.5, 0.5,       // 3
-       -0.5, -0.5, 0.5,     0.5, -0.5,      // 2
-       -0.5, 0.5, -0.5,    -0.5, 0.5,       // 7
-       -0.5, -0.5, 0.5,     0.5, -0.5,      // 2
-       -0.5, -0.5, -0.5,   -0.5, -0.5,      // 6
-       -0.5, 0.5, -0.5,    -0.5, 0.5,       // 7
+       -0.5, 0.5, 0.5,      0.5, 0.5,      -1.0, 0.0, 0.0,      // 3
+       -0.5, -0.5, 0.5,     0.5, -0.5,     -1.0, 0.0, 0.0,      // 2
+       -0.5, 0.5, -0.5,    -0.5, 0.5,      -1.0, 0.0, 0.0,      // 7
+       -0.5, -0.5, 0.5,     0.5, -0.5,     -1.0, 0.0, 0.0,      // 2
+       -0.5, -0.5, -0.5,   -0.5, -0.5,     -1.0, 0.0, 0.0,      // 6
+       -0.5, 0.5, -0.5,    -0.5, 0.5,      -1.0, 0.0, 0.0,      // 7
 
-        0.5, 0.5, -0.5,     0.5, 0.5,       // 4
-        0.5, 0.5, 0.5,      0.5, -0.5,      // 0
-       -0.5, 0.5, -0.5,    -0.5, 0.5,       // 7
-        0.5, 0.5, 0.5,      0.5, -0.5,      // 0
-       -0.5, 0.5, 0.5,     -0.5, -0.5,      // 3
-       -0.5, 0.5, -0.5,    -0.5, 0.5,       // 7
+        0.5, 0.5, -0.5,     0.5, 0.5,       0.0, 1.0, 0.0,      // 4
+        0.5, 0.5, 0.5,      0.5, -0.5,      0.0, 1.0, 0.0,      // 0
+       -0.5, 0.5, -0.5,    -0.5, 0.5,       0.0, 1.0, 0.0,      // 7
+        0.5, 0.5, 0.5,      0.5, -0.5,      0.0, 1.0, 0.0,      // 0
+       -0.5, 0.5, 0.5,     -0.5, -0.5,      0.0, 1.0, 0.0,      // 3
+       -0.5, 0.5, -0.5,    -0.5, 0.5,       0.0, 1.0, 0.0,      // 7
 
-        0.5, -0.5, 0.5,     0.5, 0.5,       // 1
-        0.5, -0.5, -0.5,    0.5, -0.5,      // 5
-       -0.5, -0.5, 0.5,    -0.5, 0.5,       // 2
-        0.5, -0.5, -0.5,    0.5, -0.5,      // 5
-       -0.5, -0.5, -0.5,   -0.5, -0.5,      // 6
-       -0.5, -0.5, 0.5,    -0.5, 0.5,       // 2
+        0.5, -0.5, 0.5,     0.5, 0.5,       0.0, -1.0, 0.0,     // 1
+        0.5, -0.5, -0.5,    0.5, -0.5,      0.0, -1.0, 0.0,     // 5
+       -0.5, -0.5, 0.5,    -0.5, 0.5,       0.0, -1.0, 0.0,     // 2
+        0.5, -0.5, -0.5,    0.5, -0.5,      0.0, -1.0, 0.0,     // 5
+       -0.5, -0.5, -0.5,   -0.5, -0.5,      0.0, -1.0, 0.0,     // 6
+       -0.5, -0.5, 0.5,    -0.5, 0.5,       0.0, -1.0, 0.0,     // 2
     ];
-
-    let cube = VertexBuffer::new().set_static_data(&vertices);
-    cube.bind();
-    let cube_vao = VertexArray::new()
-        .set_attrib(0, 3, 5, 0) // Positions
-        .set_attrib(1, 2, 5, 3); // Texture coords
-    cube_vao.unbind();
-
-    let light_vao = VertexArray::new().set_attrib(0, 3, 5, 0);
-    cube.unbind();
-
-    let wall_texture = Texture::new()
-        .set_default_parameters()
-        .load_image("assets/textures/wall.jpg")?;
-    let face_texture = Texture::new()
-        .set_default_parameters()
-        .load_image("assets/textures/awesomeface.png")?;
-
-    // Cube shader
-    let cube_shader = Program::new()
-        .vertex_shader("assets/shaders/cube/cube.vert")?
-        .fragment_shader("assets/shaders/cube/cube.frag")?
-        .link()?;
-    cube_shader.set_used();
-    cube_shader.set_texture_unit("wall", 0)?;
-    cube_shader.set_texture_unit("face", 1)?;
-    cube_shader.set_vec3("light_color", glm::vec3(1.0, 1.0, 1.0))?;
-
-    // Light shader
-    let light_shader = Program::new()
-        .vertex_shader("assets/shaders/light/light.vert")?
-        .fragment_shader("assets/shaders/light/light.frag")?
-        .link()?;
 
     let cube_model = glm::rotation(-0.25 * PI, &glm::vec3(0.0, 0.0, 1.0));
 
@@ -162,6 +129,43 @@ fn run() -> Result<(), failure::Error> {
     let light_position = glm::vec3(1.2, 1.0, 2.0);
     let light_model = glm::translation(&light_position);
     let light_model = glm::scale(&light_model, &glm::vec3(0.2, 0.2, 0.2));
+
+    // Buffers
+    let stride = 8;
+    let cube = VertexBuffer::new().set_static_data(&vertices, stride);
+    cube.bind();
+    let cube_vao = VertexArray::new()
+        .set_attrib(0, 3, stride, 0) // Positions
+        .set_attrib(1, 2, stride, 3) // Texture coords
+        .set_attrib(2, 3, stride, 5); // Normals
+    cube_vao.unbind();
+
+    let light_vao = VertexArray::new().set_attrib(0, 3, stride, 0);
+    cube.unbind();
+
+    let wall_texture = Texture::new()
+        .set_default_parameters()
+        .load_image("assets/textures/wall.jpg")?;
+    let face_texture = Texture::new()
+        .set_default_parameters()
+        .load_image("assets/textures/awesomeface.png")?;
+
+    // Cube shader
+    let cube_shader = Program::new()
+        .vertex_shader("assets/shaders/cube/cube.vert")?
+        .fragment_shader("assets/shaders/cube/cube.frag")?
+        .link()?;
+    cube_shader.set_used();
+    cube_shader.set_texture_unit("wall", 0)?;
+    cube_shader.set_texture_unit("face", 1)?;
+    cube_shader.set_vec3("light_color", glm::vec3(1.0, 1.0, 1.0))?;
+    cube_shader.set_vec3("light_pos", light_position)?;
+
+    // Light shader
+    let light_shader = Program::new()
+        .vertex_shader("assets/shaders/light/light.vert")?
+        .fragment_shader("assets/shaders/light/light.frag")?
+        .link()?;
     light_shader.set_used();
     light_shader.set_mat4("model", &light_model)?;
 
