@@ -13,3 +13,7 @@ nalgebra-glm = "0.5.0"
 
 [build-dependencies]
 walkdir = "2.2.9"
+
+[features]
+default = []
+debug = []

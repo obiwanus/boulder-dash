@@ -1,10 +1,11 @@
-- Move the light around
+- Calculate lighting in view space
 
 DONE:
 
 20.12.2019
 - Ambient + diffuse lighting
 - Specular lighting
+- Move the light around
 
 19.12.2019
 - Properly texture every side of the cube
