@@ -1,5 +1,4 @@
 - Follow the tutorial on materials
-- Exit on escape
 - Load the Dima model and try to draw it
 
 DONE:
@@ -10,6 +9,7 @@ DONE:
 - Move the light around
 - Calculate lighting in view space
 - Fullscreen window
+- Exit on escape
 
 19.12.2019
 - Properly texture every side of the cube

@@ -191,6 +191,9 @@ fn run() -> Result<(), failure::Error> {
 
         // Move camera
         let keyboard = event_pump.keyboard_state();
+        if keyboard.is_scancode_pressed(Scancode::Escape) {
+            break 'main;
+        }
         if keyboard.is_scancode_pressed(Scancode::W) {
             camera.go(Forward, delta_time);
         }
@@ -203,6 +206,7 @@ fn run() -> Result<(), failure::Error> {
         if keyboard.is_scancode_pressed(Scancode::D) {
             camera.go(Right, delta_time);
         }
+
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
