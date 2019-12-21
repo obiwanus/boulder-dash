@@ -29,8 +29,7 @@ impl VertexBuffer {
         }
     }
 
-    pub fn set_static_data(mut self, vertex_data: &Vec<f32>, stride: usize) -> Self {
-        self.bind();
+    pub fn set_static_data(&mut self, vertex_data: &Vec<f32>, stride: usize) {
         self.num_vertices = vertex_data.len() / stride;
         unsafe {
             gl::BufferData(
@@ -40,16 +39,56 @@ impl VertexBuffer {
                 gl::STATIC_DRAW,
             );
         }
-        self.unbind();
-        self
     }
 
-    pub fn draw_triangles(&self, vao: &VertexArray) {
-        vao.bind();
+    pub fn num_vertices(&self) -> usize {
+        self.num_vertices
+    }
+}
+
+pub struct ElementBuffer {
+    id: GLuint,
+    num_elements: usize,
+}
+
+impl ElementBuffer {
+    pub fn new() -> Self {
+        let mut id: GLuint = 0;
         unsafe {
-            gl::DrawArrays(gl::TRIANGLES, 0, self.num_vertices as i32);
+            gl::GenBuffers(1, &mut id);
         }
-        vao.unbind();
+        ElementBuffer {
+            id,
+            num_elements: 0,
+        }
+    }
+
+    pub fn bind(&self) {
+        unsafe {
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.id);
+        }
+    }
+
+    pub fn unbind(&self) {
+        unsafe {
+            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
+        }
+    }
+
+    pub fn set_static_data(&mut self, data: &Vec<u32>, stride: usize) {
+        self.num_elements = data.len() / stride;
+        unsafe {
+            gl::BufferData(
+                gl::ELEMENT_ARRAY_BUFFER,
+                (data.len() * std::mem::size_of::<u32>()) as isize,
+                data.as_ptr() as *const GLvoid,
+                gl::STATIC_DRAW,
+            );
+        }
+    }
+
+    pub fn num_elements(&self) -> usize {
+        self.num_elements
     }
 }
 
@@ -78,8 +117,7 @@ impl VertexArray {
         }
     }
 
-    pub fn set_attrib(self, location: u32, count: i32, stride: usize, offset: usize) -> Self {
-        self.bind();
+    pub fn set_attrib(&self, location: u32, count: i32, stride: usize, offset: usize) {
         unsafe {
             gl::VertexAttribPointer(
                 location,
@@ -91,7 +129,5 @@ impl VertexArray {
             );
             gl::EnableVertexAttribArray(location);
         }
-        self.unbind();
-        self
     }
 }
