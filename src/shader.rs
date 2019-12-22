@@ -119,7 +119,7 @@ impl Program {
     }
 
     /// Sets a vec3 uniform
-    pub fn set_vec3(&self, name: &str, vec: Vec3) -> Result<()> {
+    pub fn set_vec3(&self, name: &str, vec: &Vec3) -> Result<()> {
         let location = self.get_uniform_location(name)?;
         unsafe {
             gl::Uniform3fv(location, 1, vec.as_ptr());

@@ -68,47 +68,47 @@ fn run() -> Result<(), failure::Error> {
     #[rustfmt::skip]
     let cube_vertices: Vec<f32> = vec![
         // positions        // tex coords   // normals
-        0.5, 0.5, 0.5,      0.5, 0.5,       0.0, 0.0, 1.0,      // 0
-        0.5, -0.5, 0.5,     0.5, -0.5,      0.0, 0.0, 1.0,      // 1
-       -0.5, 0.5, 0.5,     -0.5, 0.5,       0.0, 0.0, 1.0,      // 3
-        0.5, -0.5, 0.5,     0.5, -0.5,      0.0, 0.0, 1.0,      // 1
-       -0.5, -0.5, 0.5,    -0.5, -0.5,      0.0, 0.0, 1.0,      // 2
-       -0.5, 0.5, 0.5,     -0.5, 0.5,       0.0, 0.0, 1.0,      // 3
+        0.5, 0.5, 0.5,      1.0, 1.0,       0.0, 0.0, 1.0,      // 0
+        0.5, -0.5, 0.5,     1.0, 0.0,       0.0, 0.0, 1.0,      // 1
+       -0.5, 0.5, 0.5,      0.0, 1.0,       0.0, 0.0, 1.0,      // 3
+        0.5, -0.5, 0.5,     1.0, 0.0,       0.0, 0.0, 1.0,      // 1
+       -0.5, -0.5, 0.5,     0.0, 0.0,       0.0, 0.0, 1.0,      // 2
+       -0.5, 0.5, 0.5,      0.0, 1.0,       0.0, 0.0, 1.0,      // 3
 
-       -0.5, 0.5, -0.5,     0.5, 0.5,       0.0, 0.0, -1.0,     // 7
-        0.5, 0.5, -0.5,     0.5, -0.5,      0.0, 0.0, -1.0,     // 4
-       -0.5, -0.5, -0.5,   -0.5, 0.5,       0.0, 0.0, -1.0,     // 6
-       -0.5, -0.5, -0.5,    0.5, -0.5,      0.0, 0.0, -1.0,     // 6
-        0.5, -0.5, -0.5,   -0.5, -0.5,      0.0, 0.0, -1.0,     // 5
-        0.5, 0.5, -0.5,    -0.5, 0.5,       0.0, 0.0, -1.0,     // 4
+       -0.5, 0.5, -0.5,     1.0, 1.0,       0.0, 0.0, -1.0,     // 7
+        0.5, 0.5, -0.5,     1.0, 0.0,       0.0, 0.0, -1.0,     // 4
+       -0.5, -0.5, -0.5,    0.0, 1.0,       0.0, 0.0, -1.0,     // 6
+       -0.5, -0.5, -0.5,    1.0, 0.0,       0.0, 0.0, -1.0,     // 6
+        0.5, -0.5, -0.5,    0.0, 0.0,       0.0, 0.0, -1.0,     // 5
+        0.5, 0.5, -0.5,     0.0, 1.0,       0.0, 0.0, -1.0,     // 4
 
-        0.5, 0.5, -0.5,     0.5, 0.5,       1.0, 0.0, 0.0,      // 4
-        0.5, -0.5, -0.5,    0.5, -0.5,      1.0, 0.0, 0.0,      // 5
-        0.5, 0.5, 0.5,     -0.5, 0.5,       1.0, 0.0, 0.0,      // 0
-        0.5, -0.5, -0.5,    0.5, -0.5,      1.0, 0.0, 0.0,      // 5
-        0.5, -0.5, 0.5,    -0.5, -0.5,      1.0, 0.0, 0.0,      // 1
-        0.5, 0.5, 0.5,     -0.5, 0.5,       1.0, 0.0, 0.0,      // 0
+        0.5, 0.5, -0.5,     1.0, 1.0,       1.0, 0.0, 0.0,      // 4
+        0.5, -0.5, -0.5,    1.0, 0.0,       1.0, 0.0, 0.0,      // 5
+        0.5, 0.5, 0.5,      0.0, 1.0,       1.0, 0.0, 0.0,      // 0
+        0.5, -0.5, -0.5,    1.0, 0.0,       1.0, 0.0, 0.0,      // 5
+        0.5, -0.5, 0.5,     0.0, 0.0,       1.0, 0.0, 0.0,      // 1
+        0.5, 0.5, 0.5,      0.0, 1.0,       1.0, 0.0, 0.0,      // 0
 
-       -0.5, 0.5, 0.5,      0.5, 0.5,      -1.0, 0.0, 0.0,      // 3
-       -0.5, -0.5, 0.5,     0.5, -0.5,     -1.0, 0.0, 0.0,      // 2
-       -0.5, 0.5, -0.5,    -0.5, 0.5,      -1.0, 0.0, 0.0,      // 7
-       -0.5, -0.5, 0.5,     0.5, -0.5,     -1.0, 0.0, 0.0,      // 2
-       -0.5, -0.5, -0.5,   -0.5, -0.5,     -1.0, 0.0, 0.0,      // 6
-       -0.5, 0.5, -0.5,    -0.5, 0.5,      -1.0, 0.0, 0.0,      // 7
+       -0.5, 0.5, 0.5,      1.0, 1.0,      -1.0, 0.0, 0.0,      // 3
+       -0.5, -0.5, 0.5,     1.0, 0.0,      -1.0, 0.0, 0.0,      // 2
+       -0.5, 0.5, -0.5,     0.0, 1.0,      -1.0, 0.0, 0.0,      // 7
+       -0.5, -0.5, 0.5,     1.0, 0.0,      -1.0, 0.0, 0.0,      // 2
+       -0.5, -0.5, -0.5,    0.0, 0.0,      -1.0, 0.0, 0.0,      // 6
+       -0.5, 0.5, -0.5,     0.0, 1.0,      -1.0, 0.0, 0.0,      // 7
 
-        0.5, 0.5, -0.5,     0.5, 0.5,       0.0, 1.0, 0.0,      // 4
-        0.5, 0.5, 0.5,      0.5, -0.5,      0.0, 1.0, 0.0,      // 0
-       -0.5, 0.5, -0.5,    -0.5, 0.5,       0.0, 1.0, 0.0,      // 7
-        0.5, 0.5, 0.5,      0.5, -0.5,      0.0, 1.0, 0.0,      // 0
-       -0.5, 0.5, 0.5,     -0.5, -0.5,      0.0, 1.0, 0.0,      // 3
-       -0.5, 0.5, -0.5,    -0.5, 0.5,       0.0, 1.0, 0.0,      // 7
+        0.5, 0.5, -0.5,     1.0, 1.0,       0.0, 1.0, 0.0,      // 4
+        0.5, 0.5, 0.5,      1.0, 0.0,       0.0, 1.0, 0.0,      // 0
+       -0.5, 0.5, -0.5,     0.0, 1.0,       0.0, 1.0, 0.0,      // 7
+        0.5, 0.5, 0.5,      1.0, 0.0,       0.0, 1.0, 0.0,      // 0
+       -0.5, 0.5, 0.5,      0.0, 0.0,       0.0, 1.0, 0.0,      // 3
+       -0.5, 0.5, -0.5,     0.0, 1.0,       0.0, 1.0, 0.0,      // 7
 
-        0.5, -0.5, 0.5,     0.5, 0.5,       0.0, -1.0, 0.0,     // 1
-        0.5, -0.5, -0.5,    0.5, -0.5,      0.0, -1.0, 0.0,     // 5
-       -0.5, -0.5, 0.5,    -0.5, 0.5,       0.0, -1.0, 0.0,     // 2
-        0.5, -0.5, -0.5,    0.5, -0.5,      0.0, -1.0, 0.0,     // 5
-       -0.5, -0.5, -0.5,   -0.5, -0.5,      0.0, -1.0, 0.0,     // 6
-       -0.5, -0.5, 0.5,    -0.5, 0.5,       0.0, -1.0, 0.0,     // 2
+        0.5, -0.5, 0.5,     1.0, 1.0,       0.0, -1.0, 0.0,     // 1
+        0.5, -0.5, -0.5,    1.0, 0.0,       0.0, -1.0, 0.0,     // 5
+       -0.5, -0.5, 0.5,     0.0, 1.0,       0.0, -1.0, 0.0,     // 2
+        0.5, -0.5, -0.5,    1.0, 0.0,       0.0, -1.0, 0.0,     // 5
+       -0.5, -0.5, -0.5,    0.0, 0.0,       0.0, -1.0, 0.0,     // 6
+       -0.5, -0.5, 0.5,     0.0, 1.0,       0.0, -1.0, 0.0,     // 2
     ];
 
     let cube_positions = vec![
@@ -143,12 +143,12 @@ fn run() -> Result<(), failure::Error> {
     light_vao.set_attrib(0, 3, stride, 0);
     cube.unbind();
 
-    let wall_texture = Texture::new()
+    let crate_texture = Texture::new()
         .set_default_parameters()
-        .load_image("assets/textures/wall.jpg")?;
-    let face_texture = Texture::new()
+        .load_image("assets/textures/crate/diffuse.png")?;
+    let crate_specular_map = Texture::new()
         .set_default_parameters()
-        .load_image("assets/textures/awesomeface.png")?;
+        .load_image("assets/textures/crate/specular.png")?;
 
     // Cube shader
     let cube_shader = Program::new()
@@ -156,17 +156,12 @@ fn run() -> Result<(), failure::Error> {
         .fragment_shader("assets/shaders/cube/cube.frag")?
         .link()?;
     cube_shader.set_used();
-    cube_shader.set_texture_unit("wall", 0)?;
-    cube_shader.set_texture_unit("face", 1)?;
     // Set default material
-    cube_shader.set_vec3("material.ambient", glm::vec3(1.0, 0.5, 0.31))?;
-    cube_shader.set_vec3("material.diffuse", glm::vec3(1.0, 0.5, 0.31))?;
-    cube_shader.set_vec3("material.specular", glm::vec3(0.5, 0.5, 0.5))?;
+    cube_shader.set_texture_unit("material.diffuse", 0)?;
+    cube_shader.set_texture_unit("material.specular", 1)?;
     cube_shader.set_float("material.shininess", 32.0)?;
-    // Set light properties
-    cube_shader.set_vec3("light.ambient", glm::vec3(0.2, 0.2, 0.2))?;
-    cube_shader.set_vec3("light.diffuse", glm::vec3(0.5, 0.5, 0.5))?;
-    cube_shader.set_vec3("light.specular", glm::vec3(1.0, 1.0, 1.0))?;
+    crate_texture.bind(0);
+    crate_specular_map.bind(1);
 
     // Light shader
     let light_shader = Program::new()
@@ -240,11 +235,19 @@ fn run() -> Result<(), failure::Error> {
         let light_model = glm::translation(&light_position);
         let light_model = glm::scale(&light_model, &glm::vec3(0.1, 0.1, 0.1));
 
+        // let light_color = glm::vec3(
+        //     (seconds_elapsed * 2.0).sin(),
+        //     (seconds_elapsed * 0.7).sin(),
+        //     (seconds_elapsed * 1.3).sin(),
+        // );
+        let light_color = glm::vec3(1.0, 1.0, 1.0);
+
         // Draw light cube
         light_shader.set_used();
         light_shader.set_mat4("proj", &proj)?;
         light_shader.set_mat4("view", &view)?;
         light_shader.set_mat4("model", &light_model)?;
+        light_shader.set_vec3("light_color", &light_color)?;
         light_vao.bind();
         cube.draw_triangles();
 
@@ -256,10 +259,11 @@ fn run() -> Result<(), failure::Error> {
         let light_pos = glm::vec4_to_vec3(
             &(view * glm::vec4(light_position.x, light_position.y, light_position.z, 1.0)),
         );
-        cube_shader.set_vec3("light.position", light_pos)?;
+        cube_shader.set_vec3("light.position", &light_pos)?;
+        cube_shader.set_vec3("light.ambient", &(0.2 * light_color))?;
+        cube_shader.set_vec3("light.diffuse", &(0.5 * light_color))?;
+        cube_shader.set_vec3("light.specular", &(1.0 * light_color))?;
 
-        wall_texture.bind(0);
-        face_texture.bind(1);
         cube_vao.bind();
 
         let angle = seconds_elapsed * PI / 5.0;

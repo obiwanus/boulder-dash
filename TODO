@@ -1,4 +1,3 @@
-- Experiment with different light colors
 
 DONE:
 
@@ -6,6 +5,8 @@ DONE:
 - Erased Dima so I can follow the tutorials again
 - Create a material in the shader
 - Create a light struct in the shader
+- Experiment with different light colors
+- Use diffuse and specular maps
 
 21.12.2019
 - Load the Dima model and try to draw it
