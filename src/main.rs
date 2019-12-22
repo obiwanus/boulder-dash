@@ -158,12 +158,15 @@ fn run() -> Result<(), failure::Error> {
     cube_shader.set_used();
     cube_shader.set_texture_unit("wall", 0)?;
     cube_shader.set_texture_unit("face", 1)?;
-    cube_shader.set_vec3("light_color", glm::vec3(1.0, 1.0, 1.0))?;
     // Set default material
-    cube_shader.set_vec3("material.ambient", glm::vec3(0.5, 0.2, 0.11))?;
+    cube_shader.set_vec3("material.ambient", glm::vec3(1.0, 0.5, 0.31))?;
     cube_shader.set_vec3("material.diffuse", glm::vec3(1.0, 0.5, 0.31))?;
     cube_shader.set_vec3("material.specular", glm::vec3(0.5, 0.5, 0.5))?;
     cube_shader.set_float("material.shininess", 32.0)?;
+    // Set light properties
+    cube_shader.set_vec3("light.ambient", glm::vec3(0.2, 0.2, 0.2))?;
+    cube_shader.set_vec3("light.diffuse", glm::vec3(0.5, 0.5, 0.5))?;
+    cube_shader.set_vec3("light.specular", glm::vec3(1.0, 1.0, 1.0))?;
 
     // Light shader
     let light_shader = Program::new()
@@ -253,7 +256,7 @@ fn run() -> Result<(), failure::Error> {
         let light_pos = glm::vec4_to_vec3(
             &(view * glm::vec4(light_position.x, light_position.y, light_position.z, 1.0)),
         );
-        cube_shader.set_vec3("light_pos", light_pos)?;
+        cube_shader.set_vec3("light.position", light_pos)?;
 
         wall_texture.bind(0);
         face_texture.bind(1);
