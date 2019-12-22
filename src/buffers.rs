@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use gl::types::*;
 
 pub struct VertexBuffer {
@@ -44,6 +46,12 @@ impl VertexBuffer {
     pub fn num_vertices(&self) -> usize {
         self.num_vertices
     }
+
+    pub fn draw_triangles(&self) {
+        unsafe {
+            gl::DrawArrays(gl::TRIANGLES, 0, self.num_vertices as i32);
+        }
+    }
 }
 
 pub struct ElementBuffer {
@@ -69,12 +77,6 @@ impl ElementBuffer {
         }
     }
 
-    pub fn unbind(&self) {
-        unsafe {
-            gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
-        }
-    }
-
     pub fn set_static_data(&mut self, data: &Vec<u32>, stride: usize) {
         self.num_elements = data.len() / stride;
         unsafe {
@@ -89,6 +91,17 @@ impl ElementBuffer {
 
     pub fn num_elements(&self) -> usize {
         self.num_elements
+    }
+
+    pub fn draw_triangles(&self) {
+        unsafe {
+            gl::DrawElements(
+                gl::TRIANGLES,
+                self.num_elements as i32,
+                gl::UNSIGNED_INT,
+                std::ptr::null(),
+            );
+        }
     }
 }
 

@@ -20,7 +20,7 @@ mod texture;
 use texture::Texture;
 
 mod buffers;
-use buffers::{ElementBuffer, VertexArray, VertexBuffer};
+use buffers::{VertexArray, VertexBuffer};
 
 mod camera;
 use camera::Camera;
@@ -54,10 +54,10 @@ fn run() -> Result<(), failure::Error> {
 
     let _gl_context = window.gl_create_context().unwrap();
     gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
-    // println!(
-    //     "Swap interval: {:?}",
-    //     video_subsystem.gl_get_swap_interval()
-    // );
+    println!(
+        "Swap interval: {:?}",
+        video_subsystem.gl_get_swap_interval()
+    );
     sdl.mouse().set_relative_mouse_mode(true);
 
     unsafe {
@@ -65,36 +65,6 @@ fn run() -> Result<(), failure::Error> {
         gl::ClearColor(0.05, 0.05, 0.05, 1.0);
         gl::Enable(gl::DEPTH_TEST);
     }
-
-    // Load model
-    let (models, _) = tobj::load_obj(&Path::new("assets/models/dima/dima.obj"))?;
-    assert!(models.len() == 1);
-    let dima = &models[0];
-
-    let mut dima_pos_vbo = VertexBuffer::new();
-    let mut dima_tex_vbo = VertexBuffer::new();
-    let mut dima_norm_vbo = VertexBuffer::new();
-    let mut dima_ebo = ElementBuffer::new();
-
-    let dima_vao = VertexArray::new();
-    dima_vao.bind();
-
-    // Send vertex data
-    dima_pos_vbo.bind();
-    dima_pos_vbo.set_static_data(&dima.mesh.positions, 3);
-    dima_vao.set_attrib(0, 3, 3, 0);
-    dima_tex_vbo.bind();
-    dima_tex_vbo.set_static_data(&dima.mesh.texcoords, 2);
-    dima_vao.set_attrib(1, 2, 2, 0);
-    dima_norm_vbo.bind();
-    dima_norm_vbo.set_static_data(&dima.mesh.normals, 3);
-    dima_vao.set_attrib(2, 3, 3, 0);
-
-    // Send indices
-    dima_ebo.bind();
-    dima_ebo.set_static_data(&dima.mesh.indices, 3);
-
-    dima_vao.unbind(); // finished
 
     #[rustfmt::skip]
     let cube_vertices: Vec<f32> = vec![
@@ -142,74 +112,60 @@ fn run() -> Result<(), failure::Error> {
        -0.5, -0.5, 0.5,    -0.5, 0.5,       0.0, -1.0, 0.0,     // 2
     ];
 
-    // let cube_model = glm::rotation(-0.25 * PI, &glm::vec3(0.0, 0.0, 1.0));
-
-    // let cube_positions = vec![
-    //     glm::vec3(0.0, 0.0, 0.0),
-    //     glm::vec3(2.0, 5.0, -15.0),
-    //     glm::vec3(-1.5, -2.2, -2.5),
-    //     glm::vec3(-3.8, -2.0, -12.3),
-    //     glm::vec3(2.4, -0.4, -3.5),
-    //     glm::vec3(-1.7, 3.0, -7.5),
-    //     glm::vec3(1.3, -2.0, -2.5),
-    //     glm::vec3(1.5, 2.0, -2.5),
-    //     glm::vec3(1.5, 0.2, -1.5),
-    //     glm::vec3(-1.3, 1.0, -1.5),
-    // ];
+    let cube_positions = vec![
+        glm::vec3(0.0, 0.0, 0.0),
+        glm::vec3(2.0, 5.0, -15.0),
+        glm::vec3(-1.5, -2.2, -2.5),
+        glm::vec3(-3.8, -2.0, -12.3),
+        glm::vec3(2.4, -0.4, -3.5),
+        glm::vec3(-1.7, 3.0, -7.5),
+        glm::vec3(1.3, -2.0, -2.5),
+        glm::vec3(1.5, 2.0, -2.5),
+        glm::vec3(1.5, 0.2, -1.5),
+        glm::vec3(-1.3, 1.0, -1.5),
+    ];
 
     let mut light_position = glm::vec3(0.0, 1.0, 0.0);
-    let dima_position = glm::vec3(0.0, 0.0, 0.0);
-    let dima_model = glm::rotation(-0.5 * PI, &glm::vec3(1.0, 0.0, 0.0));
-    let dima_model = glm::translate(&dima_model, &dima_position);
-    let dima_model = glm::scale(&dima_model, &glm::vec3(0.1, 0.1, 0.1));
+    let cube_model = glm::rotation(-0.25 * PI, &glm::vec3(0.0, 0.0, 1.0));
 
     // Buffers
     let stride = 8;
     let mut cube = VertexBuffer::new();
     cube.bind();
     cube.set_static_data(&cube_vertices, stride);
-    // let cube_vao = VertexArray::new();
-    // cube_vao.set_attrib(0, 3, stride, 0); // Positions
-    // cube_vao.set_attrib(1, 2, stride, 3); // Texture coords
-    // cube_vao.set_attrib(2, 3, stride, 5); // Normals
+    let cube_vao = VertexArray::new();
+    cube_vao.bind();
+    cube_vao.set_attrib(0, 3, stride, 0); // Positions
+    cube_vao.set_attrib(1, 2, stride, 3); // Texture coords
+    cube_vao.set_attrib(2, 3, stride, 5); // Normals
 
     let light_vao = VertexArray::new();
     light_vao.bind();
     light_vao.set_attrib(0, 3, stride, 0);
     cube.unbind();
 
-    // let wall_texture = Texture::new()
-    //     .set_default_parameters()
-    //     .load_image("assets/textures/wall.jpg")?;
-    // let face_texture = Texture::new()
-    //     .set_default_parameters()
-    //     .load_image("assets/textures/awesomeface.png")?;
+    let wall_texture = Texture::new()
+        .set_default_parameters()
+        .load_image("assets/textures/wall.jpg")?;
+    let face_texture = Texture::new()
+        .set_default_parameters()
+        .load_image("assets/textures/awesomeface.png")?;
 
-    // // Cube shader
-    // let cube_shader = Program::new()
-    //     .vertex_shader("assets/shaders/cube/cube.vert")?
-    //     .fragment_shader("assets/shaders/cube/cube.frag")?
-    //     .link()?;
-    // cube_shader.set_used();
-    // cube_shader.set_texture_unit("wall", 0)?;
-    // cube_shader.set_texture_unit("face", 1)?;
-    // cube_shader.set_vec3("light_color", glm::vec3(1.0, 1.0, 1.0))?;
+    // Cube shader
+    let cube_shader = Program::new()
+        .vertex_shader("assets/shaders/cube/cube.vert")?
+        .fragment_shader("assets/shaders/cube/cube.frag")?
+        .link()?;
+    cube_shader.set_used();
+    cube_shader.set_texture_unit("wall", 0)?;
+    cube_shader.set_texture_unit("face", 1)?;
+    cube_shader.set_vec3("light_color", glm::vec3(1.0, 1.0, 1.0))?;
 
     // Light shader
     let light_shader = Program::new()
         .vertex_shader("assets/shaders/light/light.vert")?
         .fragment_shader("assets/shaders/light/light.frag")?
         .link()?;
-
-    // Dima shader
-    let dima_shader = Program::new()
-        .vertex_shader("assets/shaders/dima/dima.vert")?
-        .fragment_shader("assets/shaders/dima/dima.frag")?
-        .link()?;
-
-    let dima_texture = Texture::new()
-        .set_default_parameters()
-        .load_image("assets/models/dima/dima.jpg")?;
 
     let mut camera = Camera::new();
     camera.aspect_ratio = (window_width as f32) / (window_height as f32);
@@ -283,54 +239,30 @@ fn run() -> Result<(), failure::Error> {
         light_shader.set_mat4("view", &view)?;
         light_shader.set_mat4("model", &light_model)?;
         light_vao.bind();
-        unsafe {
-            gl::DrawArrays(gl::TRIANGLES, 0, cube.num_vertices() as i32);
-        }
+        cube.draw_triangles();
 
-        // Draw Dima
-        dima_shader.set_used();
-        dima_shader.set_mat4("proj", &proj)?;
-        dima_shader.set_mat4("view", &view)?;
-        dima_shader.set_vec3("light_color", glm::vec3(1.0, 1.0, 1.0))?;
+        // Draw rotating cubes
+        cube_shader.set_used();
+        cube_shader.set_mat4("proj", &proj)?;
+        cube_shader.set_mat4("view", &view)?;
         // Put light into the view space
         let light_pos = glm::vec4_to_vec3(
             &(view * glm::vec4(light_position.x, light_position.y, light_position.z, 1.0)),
         );
-        dima_shader.set_vec3("light_pos", light_pos)?;
-        dima_texture.bind(0);
+        cube_shader.set_vec3("light_pos", light_pos)?;
 
-        dima_shader.set_mat4("model", &dima_model)?;
-        dima_vao.bind();
-        unsafe {
-            gl::DrawElements(
-                gl::TRIANGLES,
-                dima_ebo.num_elements() as i32,
-                gl::UNSIGNED_INT,
-                std::ptr::null(),
-            );
+        wall_texture.bind(0);
+        face_texture.bind(1);
+        cube_vao.bind();
+
+        let angle = seconds_elapsed * PI / 5.0;
+        for pos in cube_positions.iter() {
+            let cube_model = glm::translate(&cube_model, pos);
+            let cube_model = glm::rotate(&cube_model, angle, pos); // rotate around position to get different directions
+            cube_shader.set_mat4("model", &cube_model)?;
+
+            cube.draw_triangles();
         }
-
-        // // Draw rotating cubes
-        // cube_shader.set_used();
-        // cube_shader.set_mat4("proj", &proj)?;
-        // cube_shader.set_mat4("view", &view)?;
-        // // Put light into the view space
-        // let light_pos = glm::vec4_to_vec3(
-        //     &(view * glm::vec4(light_position.x, light_position.y, light_position.z, 1.0)),
-        // );
-        // cube_shader.set_vec3("light_pos", light_pos)?;
-
-        // wall_texture.bind(0);
-        // face_texture.bind(1);
-
-        // let angle = seconds_elapsed * PI / 5.0;
-        // for pos in cube_positions.iter() {
-        //     let cube_model = glm::translate(&cube_model, pos);
-        //     let cube_model = glm::rotate(&cube_model, angle, pos); // rotate around position to get different directions
-        //     cube_shader.set_mat4("model", &cube_model)?;
-
-        //     cube.draw_triangles(&cube_vao);
-        // }
 
         #[cfg(feature = "debug")]
         {
