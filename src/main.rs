@@ -1,5 +1,4 @@
 use std::f32::consts::PI;
-use std::path::Path;
 use std::time::SystemTime;
 
 extern crate gl;
@@ -160,6 +159,11 @@ fn run() -> Result<(), failure::Error> {
     cube_shader.set_texture_unit("wall", 0)?;
     cube_shader.set_texture_unit("face", 1)?;
     cube_shader.set_vec3("light_color", glm::vec3(1.0, 1.0, 1.0))?;
+    // Set default material
+    cube_shader.set_vec3("material.ambient", glm::vec3(0.5, 0.2, 0.11))?;
+    cube_shader.set_vec3("material.diffuse", glm::vec3(1.0, 0.5, 0.31))?;
+    cube_shader.set_vec3("material.specular", glm::vec3(0.5, 0.5, 0.5))?;
+    cube_shader.set_float("material.shininess", 32.0)?;
 
     // Light shader
     let light_shader = Program::new()

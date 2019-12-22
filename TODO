@@ -1,9 +1,10 @@
-- Follow the tutorial on materials
+- Create a light struct in the shader
 
 DONE:
 
 22.12.2019
 - Erased Dima so I can follow the tutorials again
+- Create a material in the shader
 
 21.12.2019
 - Load the Dima model and try to draw it
