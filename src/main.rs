@@ -5,7 +5,6 @@ extern crate gl;
 extern crate nalgebra_glm as glm;
 extern crate sdl2;
 extern crate stb_image;
-extern crate tobj;
 
 use sdl2::keyboard::Scancode;
 
@@ -160,6 +159,14 @@ fn run() -> Result<(), failure::Error> {
     cube_shader.set_texture_unit("material.diffuse", 0)?;
     cube_shader.set_texture_unit("material.specular", 1)?;
     cube_shader.set_float("material.shininess", 32.0)?;
+
+    let light_color = glm::vec3(1.0, 1.0, 1.0);
+    cube_shader.set_vec3("light.ambient", &(0.2 * light_color))?;
+    cube_shader.set_vec3("light.diffuse", &(0.5 * light_color))?;
+    cube_shader.set_vec3("light.specular", &(1.0 * light_color))?;
+    cube_shader.set_float("light.attn_linear", 0.09)?;
+    cube_shader.set_float("light.attn_quadratic", 0.032)?;
+
     crate_texture.bind(0);
     crate_specular_map.bind(1);
 
@@ -229,18 +236,11 @@ fn run() -> Result<(), failure::Error> {
 
         // Light cube
         let x_max = 2.0;
-        let z_max = 3.0;
+        let z_max = 6.0;
         light_position.x = x_max * (seconds_elapsed * 3.0).sin();
-        light_position.z = z_max * seconds_elapsed.cos() - 2.0;
+        light_position.z = z_max * seconds_elapsed.cos() - 5.0;
         let light_model = glm::translation(&light_position);
         let light_model = glm::scale(&light_model, &glm::vec3(0.1, 0.1, 0.1));
-
-        // let light_color = glm::vec3(
-        //     (seconds_elapsed * 2.0).sin(),
-        //     (seconds_elapsed * 0.7).sin(),
-        //     (seconds_elapsed * 1.3).sin(),
-        // );
-        let light_color = glm::vec3(1.0, 1.0, 1.0);
 
         // Draw light cube
         light_shader.set_used();
@@ -260,9 +260,6 @@ fn run() -> Result<(), failure::Error> {
             &(view * glm::vec4(light_position.x, light_position.y, light_position.z, 1.0)),
         );
         cube_shader.set_vec3("light.position", &light_pos)?;
-        cube_shader.set_vec3("light.ambient", &(0.2 * light_color))?;
-        cube_shader.set_vec3("light.diffuse", &(0.5 * light_color))?;
-        cube_shader.set_vec3("light.specular", &(1.0 * light_color))?;
 
         cube_vao.bind();
 

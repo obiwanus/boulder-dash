@@ -15,23 +15,25 @@ struct Material {
 };
 
 struct Light {
+    vec3 position;
+
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-    vec3 position;
+
+    float attn_linear;
+    float attn_quadratic;
 };
 
 uniform Material material;
 uniform Light light;
 
 void main() {
-    const float MAX_DISTANCE = 20.0;
-
     vec3 normal = normalize(IN.normal);
     vec3 light_direction = normalize(light.position - IN.frag_pos);
     vec3 view_direction = normalize(-IN.frag_pos);
     float light_distance = length(light.position - IN.frag_pos);
-    float distance_effect = min(mix(1.0, 0.1, light_distance / MAX_DISTANCE), 1.0);
+    float attenuation = 1.0 / (1.0 + light.attn_linear * light_distance + light.attn_quadratic * (light_distance * light_distance));
 
     vec3 material_color = texture(material.diffuse, IN.tex_coord).xyz;
     vec3 material_specular = texture(material.specular, IN.tex_coord).xyz;
@@ -48,5 +50,5 @@ void main() {
     float spec = pow(max(dot(view_direction, reflection), 0.0), material.shininess);
     vec3 specular = material_specular * spec * light.specular;
 
-    Color = vec4(ambient + (diffuse + specular) * distance_effect, 1.0);
+    Color = vec4((ambient + diffuse + specular) * attenuation, 1.0);
 }

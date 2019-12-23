@@ -26,37 +26,27 @@ pub type Result<T> = std::result::Result<T, ShaderError>;
 
 pub struct Program {
     id: GLuint,
-    vert: Option<Shader>,
-    frag: Option<Shader>,
 }
 
 impl Program {
     pub fn new() -> Program {
         let program_id = unsafe { gl::CreateProgram() };
-        Program {
-            id: program_id,
-            vert: None,
-            frag: None,
-        }
+        Program { id: program_id }
     }
 
-    pub fn vertex_shader(mut self, path: &str) -> Result<Self> {
+    pub fn vertex_shader(self, path: &str) -> Result<Self> {
         let shader = Shader::new(gl::VERTEX_SHADER, path)?;
         unsafe {
             gl::AttachShader(self.id, shader.id());
         }
-        self.vert = Some(shader);
-
         Ok(self)
     }
 
-    pub fn fragment_shader(mut self, path: &str) -> Result<Self> {
+    pub fn fragment_shader(self, path: &str) -> Result<Self> {
         let shader = Shader::new(gl::FRAGMENT_SHADER, path)?;
         unsafe {
             gl::AttachShader(self.id, shader.id());
         }
-        self.frag = Some(shader);
-
         Ok(self)
     }
 
