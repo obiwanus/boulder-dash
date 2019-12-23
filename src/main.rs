@@ -44,7 +44,7 @@ fn run() -> Result<(), failure::Error> {
     let window = video_subsystem
         .window("Boulder Dash", 1024, 768)
         .opengl()
-        .fullscreen_desktop()
+        // .fullscreen_desktop()
         .build()
         .unwrap();
 
@@ -123,7 +123,6 @@ fn run() -> Result<(), failure::Error> {
         glm::vec3(-1.3, 1.0, -1.5),
     ];
 
-    let mut light_position = glm::vec3(0.0, 1.0, 0.0);
     let cube_model = glm::rotation(-0.25 * PI, &glm::vec3(0.0, 0.0, 1.0));
 
     // Buffers
@@ -160,12 +159,26 @@ fn run() -> Result<(), failure::Error> {
     cube_shader.set_texture_unit("material.specular", 1)?;
     cube_shader.set_float("material.shininess", 32.0)?;
 
-    let light_color = glm::vec3(1.0, 1.0, 1.0);
-    cube_shader.set_vec3("light.ambient", &(0.2 * light_color))?;
-    cube_shader.set_vec3("light.diffuse", &(0.5 * light_color))?;
-    cube_shader.set_vec3("light.specular", &(1.0 * light_color))?;
-    cube_shader.set_float("light.attn_linear", 0.09)?;
-    cube_shader.set_float("light.attn_quadratic", 0.032)?;
+    // Directional light
+    // let light_color: glm::Vec3 = glm::vec3(1.0, 1.0, 1.0);
+    // cube_shader.set_vec3("directional_light.direction", &glm::vec3(-1.0, -1.0, -1.0))?;
+    // cube_shader.set_vec3("directional_light.ambient", &(0.2 * light_color))?;
+    // cube_shader.set_vec3("directional_light.diffuse", &(0.5 * light_color))?;
+    // cube_shader.set_vec3("directional_light.specular", &(1.0 * light_color))?;
+
+    // Point lights
+    let point_light_positions = vec![
+        glm::vec3(0.7, 0.2, 2.0),
+        glm::vec3(2.3, -3.3, -4.0),
+        glm::vec3(-4.0, 2.0, -12.0),
+        glm::vec3(0.0, 0.0, -3.0),
+    ];
+    let point_light_colors = vec![
+        glm::vec3(1.0, 0.0, 0.0),
+        glm::vec3(0.0, 1.0, 0.0),
+        glm::vec3(0.0, 0.5, 0.3),
+        glm::vec3(0.0, 0.0, 1.0),
+    ];
 
     crate_texture.bind(0);
     crate_specular_map.bind(1);
@@ -234,34 +247,47 @@ fn run() -> Result<(), failure::Error> {
         let proj = camera.get_projection_matrix();
         let view = camera.get_view_matrix();
 
-        // Light cube
-        let x_max = 2.0;
-        let z_max = 6.0;
-        light_position.x = x_max * (seconds_elapsed * 3.0).sin();
-        light_position.z = z_max * seconds_elapsed.cos() - 5.0;
-        let light_model = glm::translation(&light_position);
-        let light_model = glm::scale(&light_model, &glm::vec3(0.1, 0.1, 0.1));
+        // // Light cube
+        // let x_max = 2.0;
+        // let z_max = 6.0;
+        // light_position.x = x_max * (seconds_elapsed * 3.0).sin();
+        // light_position.z = z_max * seconds_elapsed.cos() - 5.0;
+        // let light_model = glm::translation(&light_position);
+        // let light_model = glm::scale(&light_model, &glm::vec3(0.1, 0.1, 0.1));
 
-        // Draw light cube
+        // Draw light cubes
+        light_vao.bind();
         light_shader.set_used();
         light_shader.set_mat4("proj", &proj)?;
         light_shader.set_mat4("view", &view)?;
-        light_shader.set_mat4("model", &light_model)?;
-        light_shader.set_vec3("light_color", &light_color)?;
-        light_vao.bind();
-        cube.draw_triangles();
+        for (pos, color) in point_light_positions.iter().zip(point_light_colors.iter()) {
+            let light_model = glm::translation(&pos);
+            let light_model = glm::scale(&light_model, &glm::vec3(0.1, 0.1, 0.1));
+            light_shader.set_mat4("model", &light_model)?;
+            light_shader.set_vec3("light_color", &color)?;
+            cube.draw_triangles();
+        }
 
         // Draw rotating cubes
         cube_shader.set_used();
         cube_shader.set_mat4("proj", &proj)?;
         cube_shader.set_mat4("view", &view)?;
-        // Put light into the view space
-        let light_pos = glm::vec4_to_vec3(
-            &(view * glm::vec4(light_position.x, light_position.y, light_position.z, 1.0)),
-        );
-        cube_shader.set_vec3("light.position", &light_pos)?;
-
         cube_vao.bind();
+
+        for (i, (pos, color)) in point_light_positions
+            .iter()
+            .zip(point_light_colors.iter())
+            .enumerate()
+        {
+            // Convert light position to view space
+            let light_pos = glm::vec4_to_vec3(&(view * glm::vec4(pos.x, pos.y, pos.z, 1.0)));
+            cube_shader.set_vec3(&format!("point_lights[{}].position", i), &light_pos)?;
+            cube_shader.set_vec3(&format!("point_lights[{}].ambient", i), &(0.2 * color))?;
+            cube_shader.set_vec3(&format!("point_lights[{}].diffuse", i), &(0.5 * color))?;
+            cube_shader.set_vec3(&format!("point_lights[{}].specular", i), &(1.0 * color))?;
+            cube_shader.set_float(&format!("point_lights[{}].attn_linear", i), 0.09)?;
+            cube_shader.set_float(&format!("point_lights[{}].attn_quadratic", i), 0.032)?;
+        }
 
         let angle = seconds_elapsed * PI / 5.0;
         for pos in cube_positions.iter() {
