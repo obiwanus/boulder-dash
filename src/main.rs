@@ -5,8 +5,10 @@ extern crate gl;
 extern crate nalgebra_glm as glm;
 extern crate sdl2;
 extern crate stb_image;
+extern crate gltf;
 
 use sdl2::keyboard::Scancode;
+use gltf::Gltf;
 
 #[macro_use]
 extern crate failure;
@@ -32,6 +34,18 @@ fn main() {
 }
 
 fn run() -> Result<(), failure::Error> {
+
+    let gltf = Gltf::open("assets/models/knight_artorias/scene.gltf")?;
+    for scene in gltf.scenes() {
+        for node in scene.nodes() {
+            println!(
+                "Node #{} has {} children",
+                node.index(),
+                node.children().count(),
+            );
+        }
+    }
+
     let sdl = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
 
