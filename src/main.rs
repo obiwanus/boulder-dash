@@ -1,14 +1,14 @@
 use std::f32::consts::PI;
+use std::time::Instant;
 use std::time::SystemTime;
 
 extern crate gl;
+extern crate gltf;
 extern crate nalgebra_glm as glm;
 extern crate sdl2;
 extern crate stb_image;
-extern crate gltf;
 
 use sdl2::keyboard::Scancode;
-use gltf::Gltf;
 
 #[macro_use]
 extern crate failure;
@@ -34,8 +34,10 @@ fn main() {
 }
 
 fn run() -> Result<(), failure::Error> {
+    let start = Instant::now();
+    let (gltf, _buffers, _images) = gltf::import("assets/models/knight_artorias/scene.gltf")?;
+    println!("Time: {:.2?}", start.elapsed());
 
-    let gltf = Gltf::open("assets/models/knight_artorias/scene.gltf")?;
     for scene in gltf.scenes() {
         for node in scene.nodes() {
             println!(
